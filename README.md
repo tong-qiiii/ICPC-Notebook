@@ -2,7 +2,7 @@
 
 用于整理 ICPC 竞赛算法模板、说明和验证用例，并使用 Typst 编译为便于查阅的 PDF Notebook。
 
-当前仅完成项目结构初始化：尚未迁移算法，也未生成算法代码。`raw/` 永久保存原始 Markdown 备份，不修改其中任何文件。
+已迁移第一章基础工具，对应 `sections/01_tools.typ` 与 `code/basic/*.hpp`；其余章节仍保留导入占位。`raw/` 永久保存原始 Markdown 备份，不修改其中任何文件。
 
 ## 目录结构
 
@@ -22,12 +22,12 @@ ICPC-Notebook/
 │   ├── 08_Poly.md
 │   ├── 09_string.md
 │   └── 10_dp.md
-├── sections/       # 后续 Typst 章节
-├── code/           # 后续 C++17 模板
-└── test/           # 后续测试和对拍工具
+├── sections/       # Typst 章节，已包含 01_tools.typ
+├── code/           # GNU++17 模板，基础工具位于 basic/
+└── test/           # 测试和对拍工具，基础工具测试位于 basic/
 ```
 
-三个新目录各包含一个空的 `.gitkeep`，用于让 Git 保留目录结构。
+三个目录保留初始化时的 `.gitkeep`。
 
 ## 编译 Typst
 
@@ -44,13 +44,13 @@ typst compile main.typ notebook.pdf
 typst watch main.typ notebook.pdf
 ```
 
-`main.typ` 当前仅包含十个章节的注释导入占位，不展示正文。先创建相应章节文件，再取消对应 `#include` 行前的 `//`。章节路径和导入规则见 [Typst 官方文档](https://typst.app/docs/reference/scripting/#modules)。
+`main.typ` 已启用基础工具章，其他九章仍是注释导入占位。先创建相应章节文件，再取消对应 `#include` 行前的 `//`。章节路径和导入规则见 [Typst 官方文档](https://typst.app/docs/reference/scripting/#modules)。
 
 `notebook.pdf` 是本地生成产物，默认无需提交。包含中文正文后，请确保编译环境具备所选中文字体。
 
 ## 添加新算法模板
 
-以下步骤用于后续内容维护，当前初始化阶段不执行：
+每次按章节或算法逐步维护：
 
 1. 阅读 [AGENTS.md](AGENTS.md)，确定算法分类、接口、复杂度和适用条件。参考 `raw/` 时保持原文件不变。
 2. 在 `code/<topic>/` 下添加小写下划线命名的 `.hpp` 或 `.cpp` 文件，保证兼容 C++17。
@@ -59,3 +59,13 @@ typst watch main.typ notebook.pdf
 5. 在 `sections/NN_topic.typ` 中添加算法说明和源码引用。代码引用路径相对于章节文件，指向 `../code/<topic>/<algorithm>.hpp` 或 `.cpp`，使用 `read` 配合 `raw` 展示源码。
 6. 若章节文件是新建的，在 `main.typ` 中启用对应导入；新增分类时按编号顺序补充导入。
 7. 编译 Notebook，检查 PDF 排版及 `git diff`、`git status`，确认 `raw/` 没有变化后再按需提交。
+
+## 基础工具验证
+
+安装 Python 3 和支持 GNU++17 的 GCC 后，在仓库根目录执行：
+
+```sh
+python test/basic/run_tests.py
+```
+
+脚本会检查头文件独立编译、章节调用示例及多个翻译单元链接，并分别运行提交模式和 `-DLOCAL` 模式的边界与随机测试。可通过 `CXX` 环境变量指定编译器。可执行文件和对拍输入输出仅写入临时目录，不污染仓库。

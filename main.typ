@@ -1,8 +1,18 @@
-// ICPC Notebook 总入口：当前仅预留章节导入结构。
-// 创建对应 sections/*.typ 文件后，再取消导入行前的注释。
+// ICPC Notebook 总入口。仅启用已经迁移完成的章节。
+// 创建其余 sections/*.typ 文件后，再取消对应导入行前的注释。
+
+#set page(paper: "a4", margin: 16mm, numbering: "1")
+#set text(size: 10pt)
+#set par(leading: 0.5em)
+#set heading(numbering: "1.1")
+#show raw: set text(size: 8pt)
+#show raw.where(block: true): it => block(
+  breakable: it.text.split("\n").len() > 24,
+  it,
+)
 
 // 01 工具
-// #include "sections/01_tools.typ"
+#include "sections/01_tools.typ"
 
 // 02 图论
 // #include "sections/02_graph.typ"
