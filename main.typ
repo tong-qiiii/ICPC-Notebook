@@ -143,7 +143,7 @@
 #include "sections/02_graph.typ"
 
 // 03 树
-// #include "sections/03_tree.typ"
+#include "sections/03_tree.typ"
 
 // 04 数据结构
 // #include "sections/04_data_structure.typ"

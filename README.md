@@ -2,7 +2,7 @@
 
 用于整理 ICPC 竞赛算法模板、说明和验证用例，并使用 Typst 编译为便于查阅的 PDF Notebook。
 
-已迁移基础工具与图论两章，对应 `sections/01_tools.typ`、`sections/02_graph.typ` 及 `code/basic/`、`code/graph/`；其余章节仍保留导入占位。`raw/` 永久保存原始 Markdown 备份，不修改其中任何文件。
+已迁移基础工具、图论和树论三章，对应 `sections/01_tools.typ`、`sections/02_graph.typ`、`sections/03_tree.typ` 及 `code/basic/`、`code/graph/`、`code/tree/`；其余章节仍保留导入占位。`raw/` 永久保存原始 Markdown 备份，不修改其中任何文件。
 
 ## 目录结构
 
@@ -26,9 +26,9 @@ ICPC-Notebook/
 │   ├── 08_Poly.md
 │   ├── 09_string.md
 │   └── 10_dp.md
-├── sections/       # Typst 章节，已包含 01_tools.typ、02_graph.typ
-├── code/           # GNU++17 模板，basic/ 为工具，graph/ 为图论
-└── test/           # 对应 basic/、graph/ 的测试和对拍工具
+├── sections/       # 已迁移工具、图论、树论三章
+├── code/           # GNU++17 模板：basic/、graph/、tree/
+└── test/           # 对应 basic/、graph/、tree/ 的测试和对拍工具
 ```
 
 三个目录保留初始化时的 `.gitkeep`。
@@ -71,7 +71,7 @@ typst compile main.typ ICPC-Notebook.pdf
 typst watch main.typ ICPC-Notebook.pdf
 ```
 
-`main.typ` 已启用基础工具与图论，其他八章仍是注释导入占位。先创建相应章节文件，再取消对应 `#include` 行前的 `//`。章节路径和导入规则见 [Typst 官方文档](https://typst.app/docs/reference/scripting/#modules)。
+`main.typ` 已启用基础工具、图论和树论，其他七章仍是注释导入占位。先创建相应章节文件，再取消对应 `#include` 行前的 `//`。章节路径和导入规则见 [Typst 官方文档](https://typst.app/docs/reference/scripting/#modules)。
 
 `ICPC-Notebook.pdf`、校验文件和字体缓存均不提交到 Git。CI 直接编译 `main.typ`，章节及所有排版以此入口为准；尚未启用的章节不会自动加入 PDF。
 
@@ -141,3 +141,15 @@ python test/graph/run_tests.py
 脚本验证每份头文件独立编译、个人基础模板宏兼容、样例与边界、多次调用、随机或穷举对拍，并编译运行章节中展开依赖后的全部调用示例。检查包含 `-std=c++17` 与 GNU++17 两种模式，生成产物只写入临时目录。
 
 比赛时从 PDF 复制个人基础模板及所需算法实现，无需引用仓库头文件。DSU、Dinic 等依赖会在相应模板处完整展示；组合多份算法时，共用实现只复制一次。两版费用流分别使用 `MCMF` 与 `MCMFPotential`，可以同时包含。
+
+## 树论验证与比赛使用
+
+树论完整对应 `raw/03_tree.md` 的 3.1-3.9，保留 9 个独立轻量 struct：倍增 LCA、树剖 LCA、Tarjan 离线 LCA、HLD、虚树、DSU on Tree、点分治、Kruskal 重构树和 LCT。源码、接口、复杂度、最小调用示例、适用边界及现场记忆分别见 `code/tree/` 和 `sections/03_tree.typ`，顺序与原稿一致。
+
+```sh
+python test/tree/run_tests.py
+```
+
+脚本在 C++17 独立头文件模式和 GNU++17 个人基础模板模式下，检查全部模板、边界、多次初始化、换根和随机对拍；另编译运行 9 份 PDF 调用示例，并检查多翻译单元链接。使用断言、标准库边界检查及 `-ftrapv`，中间文件仅写入系统临时目录。
+
+本章保留递归 DFS，深链应评估栈空间；LCT 仍为迭代 Splay。点分治内部使用 GCC `__int128` 累加距离，避免 `ll` 边权累加溢出；其余权值运算的 `ll` 范围约束见对应模板说明。PDF 展示的模板已包含标准头文件及 `ll` 兜底宏，移除的只有维护用 `#pragma once`，无需引用仓库头文件。
