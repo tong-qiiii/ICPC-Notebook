@@ -1,0 +1,133 @@
+name: Build Notebook PDF
+
+on:
+  push:
+    branches: [main]
+    tags: ['notebook-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: notebook-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+
+jobs:
+  build:
+    name: Build PDF
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      TYPST_FONT_PATHS: ${{ github.workspace }}/.cache/notebook-fonts
+      TYPST_IGNORE_SYSTEM_FONTS: 'true'
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Typst
+        uses: typst-community/setup-typst@v5.3.0
+        with:
+          typst-version: '0.15.1'
+
+      - name: Prepare pinned fonts
+        run: |
+          python3 scripts/setup_fonts.py
+          typst --version
+          typst fonts > "$RUNNER_TEMP/notebook-fonts.txt"
+          cat "$RUNNER_TEMP/notebook-fonts.txt"
+          for font in 'DejaVu Sans Mono' 'New Computer Modern' 'New Computer Modern Math' 'Noto Serif CJK SC' 'LXGW WenKai'; do
+            grep -Fx "$font" "$RUNNER_TEMP/notebook-fonts.txt"
+          done
+
+      - name: Compile Notebook
+        run: |
+          rm -f -- ICPC-Notebook.pdf ICPC-Notebook.pdf.sha256
+          typst compile main.typ ICPC-Notebook.pdf
+          test -s ICPC-Notebook.pdf
+          sha256sum ICPC-Notebook.pdf > ICPC-Notebook.pdf.sha256
+
+      # Default success() condition: never upload after a failed compile.
+      - name: Upload PDF
+        id: upload
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: ICPC-Notebook-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ICPC-Notebook.pdf
+            ICPC-Notebook.pdf.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Write build summary
+        env:
+          SOURCE_REF: ${{ github.ref_name }}
+          SOURCE_SHA: ${{ github.sha }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          {
+            echo '### Notebook PDF built successfully'
+            printf '\nSource: `%s` (`%s`)\n' "$SOURCE_REF" "$SOURCE_SHA"
+            printf '\n[Download this build](%s) (retained for 30 days)\n\n' "$ARTIFACT_URL"
+            typst --version
+            echo
+            echo '```text'
+            cat ICPC-Notebook.pdf.sha256
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    name: Publish contest PDF
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/notebook-v')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # Required only for creating a Release and uploading its PDF assets.
+    permissions:
+      contents: write
+    steps:
+      - name: Download PDF from this build
+        uses: actions/download-artifact@v8.0.2
+        with:
+          artifact-ids: ${{ needs.build.outputs.artifact-id }}
+          path: dist
+          merge-multiple: true
+
+      - name: Verify PDF checksum
+        working-directory: dist
+        run: |
+          test -s ICPC-Notebook.pdf
+          sha256sum --check ICPC-Notebook.pdf.sha256
+
+      - name: Publish versioned PDF
+        working-directory: dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          SOURCE_SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            printf 'Contest Notebook built from `%s` (`%s`).\n\n' "$RELEASE_TAG" "$SOURCE_SHA"
+            printf 'Build: %s\n\n' "$RUN_URL"
+            echo 'Download ICPC-Notebook.pdf; the .sha256 file verifies the PDF.'
+          } > release-notes.md
+
+          # Resume an interrupted draft, but never replace a published version.
+          if gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft' > release-state.txt; then
+            if [[ "$(cat release-state.txt)" != 'true' ]]; then
+              echo '::error::This version is already published. Use a new notebook-v* tag.'
+              exit 1
+            fi
+          else
+            gh release create "$RELEASE_TAG" --verify-tag --draft \
+              --title "ICPC Notebook $RELEASE_TAG" --notes-file release-notes.md
+          fi
+          gh release upload "$RELEASE_TAG" ICPC-Notebook.pdf ICPC-Notebook.pdf.sha256 --clobber
+          gh release edit "$RELEASE_TAG" --draft=false --latest \
+            --title "ICPC Notebook $RELEASE_TAG" --notes-file release-notes.md
