@@ -5,7 +5,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 TOPICS = ["basic", "graph", "tree", "data_structure", "interval_greedy",
-          "math", "geometry", "poly", "string", "dp"]
+          "math", "geometry", "poly", "string", "dp", "probability"]
 
 
 def main():
@@ -22,7 +22,7 @@ def main():
     for script in ["check_manifest.py", "check_examples.py"]:
         subprocess.run([sys.executable, "-X", "utf8", str(ROOT / "test" / script)],
                        cwd=ROOT, check=True)
-    print("PASS ALL 10 CHAPTERS", flush=True)
+    print(f"PASS ALL {len(TOPICS)} CHAPTERS", flush=True)
 
 
 if __name__ == "__main__":

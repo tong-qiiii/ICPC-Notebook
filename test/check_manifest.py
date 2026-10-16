@@ -16,12 +16,18 @@ def main():
     assert set(includes) == {p.name for p in chapters}
     headers = set()
     for chapter in manifest:
-        path = ROOT / chapter["raw"]
-        assert hashlib.sha256(path.read_bytes()).hexdigest() == chapter["raw_sha256"], path
-        original = path.read_text(encoding="utf8")
-        headings = re.findall(r"(?m)^## (.+)", original)
-        assert headings == [item["heading"] for item in chapter["items"]], path
-        for item in chapter["items"]:
+        if "raw" in chapter:
+            path = ROOT / chapter["raw"]
+            assert hashlib.sha256(path.read_bytes()).hexdigest() == chapter["raw_sha256"], path
+            original = path.read_text(encoding="utf8")
+            headings = re.findall(r"(?m)^## (.+)", original)
+            assert headings == [item["heading"] for item in chapter["items"]], path
+        else:
+            # New chapters have no fabricated raw backup or raw heading mapping.
+            assert not chapter["items"], chapter
+            assert Path(chapter["section"]).name in includes, chapter
+        # Later additions are not attributed to an immutable raw heading.
+        for item in chapter["items"] + chapter.get("additions", []):
             for name in item["templates"]:
                 assert name not in headers, name
                 headers.add(name)

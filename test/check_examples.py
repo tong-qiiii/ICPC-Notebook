@@ -1,5 +1,6 @@
-"""Compile and run the exact expanded sources and minimum examples in chapters 4-10."""
+"""Compile and run expanded chapter examples; optionally select topics."""
 from concurrent.futures import ThreadPoolExecutor
+import argparse
 from pathlib import Path
 import json
 import os
@@ -19,6 +20,9 @@ def expand(paths):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("topics", nargs="*", help="Only run these code/<topic> examples")
+    args = parser.parse_args()
     compiler = shutil.which(os.environ.get("CXX", "g++"))
     if not compiler:
         raise SystemExit("Compiler not found; set CXX")
@@ -41,6 +45,11 @@ def main():
                if h.parent.name not in ["basic", "graph", "tree"]}
     if {name for name, _, _ in examples} != headers or len(examples) != len(headers):
         raise RuntimeError("Chapter/source/example coverage mismatch")
+    if args.topics:
+        known = {Path(name).parent.name for name in headers}
+        if not set(args.topics) <= known:
+            raise RuntimeError("Unknown topics: " + ", ".join(sorted(set(args.topics) - known)))
+        examples = [item for item in examples if Path(item[0]).parent.name in args.topics]
     flags = ["-std=c++17", "-O2", "-Wall", "-Wextra", "-Werror=c++20-extensions",
              "-Werror=c++23-extensions", "-D_GLIBCXX_ASSERTIONS", "-ftrapv"]
     with tempfile.TemporaryDirectory(prefix="icpc_examples_") as temporary:

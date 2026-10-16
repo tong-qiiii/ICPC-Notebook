@@ -49,6 +49,8 @@
 
 原生机制依据：[Heading](https://typst.app/docs/reference/model/heading/)、[Counter](https://typst.app/docs/reference/introspection/counter/)、[Reference](https://typst.app/docs/reference/model/ref/)。视觉参数与下文规则保持不变。
 
+编辑器检查也必须以 `main.typ` 为入口。仓库的 `.vscode/settings.json` 使用 `tinymist.typstExtraArgs: ["main.typ"]` 固定入口；章节单独编译会丢失标题编号设置及跨章节标签。遇到此类诊断先检查编辑器入口，不要在章节内重复设置编号、复制其他章节标签或删除正确的交叉引用。字体配置仍使用统一缓存目录，不自动导出完整 PDF。
+
 ## 正文、标题和代码
 
 | 项目 | 固定规则 |

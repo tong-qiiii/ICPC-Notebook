@@ -1,0 +1,7 @@
+{
+    "tinymist.rootPath": "${workspaceFolder}",
+    "tinymist.typstExtraArgs": ["main.typ"],
+    "tinymist.fontPaths": ["${workspaceFolder}/.cache/notebook-fonts"],
+    "tinymist.systemFonts": false,
+    "tinymist.exportPdf": "never"
+}

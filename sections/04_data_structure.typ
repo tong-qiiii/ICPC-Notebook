@@ -1,6 +1,6 @@
 = 数据结构 <chapter-data-structure>
 
-#text("完整保留 raw/04_data_structure.md 的 39 个原始条目及其重要变体，按原顺序排列。原稿附项按当前位置参与算法自动编号。")
+#text("完整保留 raw/04_data_structure.md 的 39 个原始条目及其重要变体，按原顺序排列。原稿附项按当前位置参与算法自动编号；线段树组另补充 Beats 和 zkw 两种用途的独立模板。")
 
 #text("统一约定：输入规模、节点号、版本号和查询区间须合法；空区间仅在接口明确支持时使用。递归实现需评估栈空间；整数中间值及累计值必须在对应类型范围内。多测重新调用 init / build / clear，普通函数的外部维护状态由调用者清空。各模板独立选用，同名 Info / Tag / Seg / Query 不应同时粘贴。")
 
@@ -855,6 +855,128 @@ assert(seg.query(1, 3).sum == 6);
 
 #source_code(("data_structure/segment_tree_point.hpp",))
 
+
+== Segment Tree Beats：区间最值与加法 <algo-data-structure-segment-tree-beats>
+
+*用途：* 区间 `chmin`、`chmax`、加法，查询区间和、最小值和最大值。用 `Info` 保存信息、`Seg` 管树与下传；变量采用 `mn / mx / mn2 / mx2 / nmn / nmx`。
+
+=== 接口、复杂度与下标
+
+- `Seg seg(a)` 或 `build(a)`：从 1-index 的 `vector<ll>` 建树，多测会清空全部状态；空数组可建，只允许空区间操作。
+- `add(l,r,v)`：加 `v`；`chmin(l,r,v)`：逐个取 `min(a[i],v)`；`chmax(l,r,v)`：逐个取 `max(a[i],v)`。
+- `query(l,r)`：返回 `Info`，取 `.sum / .mn / .mx`；区间均为闭区间。`l>r` 时更新无效，查询返回单位元，`len=0`，不要把空区间极值当作有效答案。
+- 建树 `O(n)`，空间 `O(n)`，递归深度 `O(log n)`，查询 `O(log n)`；本组最值与加法操作使用总计 `O((n+q) log^2 n)` 的均摊界，单次修改最坏可达 `O(n)`。
+
+=== 分类与赛场修改位置
+
+- `Info`：`sum`、长度 `len`，严格第一 / 第二小值 `mn,mn2`，严格第一 / 第二大值 `mx,mx2`，最小 / 最大值出现次数 `nmn,nmx`。`operator+` 合并左右信息，`Info()` 是空区间单位元。
+- `Info::apply(v,op)`：`op=0/1/2` 对应加、取小、取大。能整段处理返回 true；不能时返回 false，且不能提前改动任何字段。
+- `Seg::modify`：先检查操作无效果的退出条件，再尝试整段处理；失败就 `push`、递归、`pull`。`Seg::apply` 同步维护加标记，`push` 先下传加法，再用父节点最大 / 最小值限制儿子。
+- 扩展维护量时，修改节点字段、叶子构造、合并和三种操作的更新公式；若增加新的操作，必须同时证明“何时不变 / 何时可整段更新 / 如何下传”，重新分析均摊复杂度，不能照搬普通 InfoTag 任意替换标记。
+- 只需要 `chmin` 时可裁掉最小值与 `chmax` 分支，但应重新对拍；本版不含历史最值、区间取模等额外变体。
+
+=== 注意事项
+
+`chmin(v)` 只有 `mx2 < v < mx` 才能只修改最大值组；`v==mx2` 必须递归，否则合并后的极值计数会错。`chmax` 对称。改最大值时还需同步可能相等的 `mn/mn2`，改最小值时同步 `mx/mx2`。
+
+`INF=2^60` 只作不存在的次值哨兵。初值、修改参数以及所有实际或延迟状态中的有限极值（包括 push 时先加后截断的中间状态）必须严格处于 `(-INF,INF)`；哨兵不能参与加法。所有节点和、查询和、累计加标记须在 `ll` 内。更新和用 GCC `__int128` 避免乘加的中间溢出，最终结果仍需装进 `ll`。查询可能下传状态，不是 const。
+
+=== 最小调用示例
+
+```cpp
+Seg seg(vector<ll>{0, 1, 7, 3, 9});
+seg.chmin(1, 4, 5);
+seg.chmax(1, 3, 2);
+seg.add(2, 4, 1);
+Info ans = seg.query(1, 4);
+assert(ans.sum == 18 && ans.mn == 2 && ans.mx == 6);
+```
+
+=== 现场记忆
+
+先判无效，再判能否整段，失败才递归。严格次值不能写成非严格；上下极值互相同步；下传顺序是“加 → 取小 → 取大”。复杂度是均摊，不是每次严格对数。
+
+原理参考：#link("https://codeforces.com/blog/entry/57319")[jiry_2 的 Segment Tree Beats 原文]。
+
+=== 模板引用
+
+#source_code(("data_structure/segment_tree_beats.hpp",))
+
+== zkw 线段树：单点修改 <algo-data-structure-zkw-segment-tree-point>
+
+*用途：* 迭代线段树，默认单点赋值、区间和。只用 `Seg`、数值数组 `tr` 和短函数 `merge`，无 Info/Tag 层。
+
+=== 接口、复杂度与下标
+
+- `Seg seg(a)` / `build(a)`：输入 1-index 数组，向上补齐二次幂 `m`，第 `i` 项在 `m+i-1`，填充叶子为单位元 `E`；重建清空旧数据。
+- `modify(p,v)`：单点赋值；加法可先在外部维护当前值，再赋新值，或把叶子赋值改成 `+=`。
+- `query(l,r)`：闭区间查询；`l>r` 返回 `E`。非空区间要求 `1<=l<=r<=n`。
+- 建树 `O(n)`，修改 / 查询 `O(log n)`，空间 `O(n)`；无递归、无懒标记。空数组仅支持空查询。
+
+=== 分类与赛场修改位置
+
+- 求和：`merge(a,b)=a+b`、`E=0`；最大值：`merge=max`、`E=LLONG_MIN`；最小值：`merge=min`、`E=LLONG_MAX`；GCD：`merge=gcd`、`E=0`（注意符号与范围）。
+- 合并要满足结合律，`E` 是双侧单位元；修改 `merge` 时必须同步改 `E`。查询分别累积左右答案，因此不假设交换律。
+- 多字段复杂信息优先使用已有 @algo-data-structure-segment-tree-point；此版保持数值数组，便于竞赛现场裁改。所有合并中间值和答案须能放进 `ll`。
+
+=== 最小调用示例
+
+```cpp
+Seg seg(vector<ll>{0, 1, 2, 3, 4, 5});
+seg.modify(3, 10);
+assert(seg.query(2, 4) == 16);
+assert(seg.query(4, 3) == 0);
+```
+
+=== 现场记忆
+
+叶子赋值后一路向上合并。外部闭区间，内部转 `[l,r)`；左答案往右接，右答案往左接。填充位置必须使用单位元。
+
+=== 模板引用
+
+#source_code(("data_structure/zkw_segment_tree_point.hpp",))
+
+== zkw 线段树：区间加与区间和 <algo-data-structure-zkw-segment-tree-lazy>
+
+*用途：* 专用高性能迭代版。直接维护 `sum / tag` 两个数值数组，永久加标记，不递归、不下传，不使用 Info/Tag 抽象。
+
+=== 接口、复杂度与下标
+
+- `Seg seg(a)` / `build(a)`：1-index 数组；`m` 为不小于 `n+2` 的最小二次幂，实际叶子为 `m+i`，两边保留哨兵。多测重建清空和与标记。
+- `add(l,r,v)`：闭区间加；`query(l,r)`：闭区间和，const 查询，不改变树。空区间修改无效、查询为零；非空区间必须合法。
+- 建树 `O(n)`，每次修改 / 查询 `O(log n)`，空间 `O(n)`，无递归栈。
+
+=== 分类与赛场修改位置
+
+- `sum[p]` 包含节点自身和所有后代的修改，不包含祖先尚未计入的永久标记；`tag[p]` 是直接加在整个节点上的量。
+- 外部 `[l,r]` 转成叶子两旁的开区间 `(l+m-1,r+m+1)`，上行时选完整兄弟块。`k` 是当前层块长，`nl/nr` 是左右边界子树中已经覆盖的真实长度。
+- 修改时完整兄弟同时改 `sum/tag`，边界及公共祖先按覆盖长度补和；查询时拿完整块的和，并把边界与公共祖先的标记乘覆盖长度补齐到根。
+- 需要单点加、单点查时令 `l=r` 即可。若只改数值类型，同时修改数组、参数、返回值与中间乘积。
+- 此实现依赖加法可叠加和区间和的线性关系。不能只把加号换成 max/min，也不能直接加入覆盖、乘法或 Beats 操作；这些场景选择 @algo-data-structure-segment-tree-lazy 或 @algo-data-structure-segment-tree-beats。
+
+=== 注意事项
+
+永久标记不能再额外 push；也不能用普通 `sum[p]=sum[lc]+sum[rc]` 回拉，否则丢掉节点自身标记。查询爬到相邻边界后仍须补公共祖先标记，不能提前返回。数组必须给两侧哨兵留位置；这里与单点 zkw 的叶子偏移不同。
+
+累计标记、`tag*覆盖长度`、节点和及查询累加的每一步均须在 `ll` 范围内。两版的树下标用 int，规模须保证补齐二次幂及 `2*m` 不溢出且内存足够。是否比递归版更快取决于数据与编译器，不给出未经基准测试的性能倍数。
+
+=== 最小调用示例
+
+```cpp
+Seg seg(vector<ll>{0, 1, 2, 3, 4, 5});
+seg.add(1, 5, 3);
+seg.add(2, 4, -2);
+assert(seg.query(1, 5) == 24);
+assert(seg.query(2, 4) == 12);
+```
+
+=== 现场记忆
+
+两旁开区间夹答案，左右覆盖长度逐层累加。完整块更新和与标记；查询补齐祖先贡献。永久标记不下传，不做普通 pull。
+
+=== 模板引用
+
+#source_code(("data_structure/zkw_segment_tree_lazy.hpp",))
 
 == #text("李超线段树：整数最大值") <algo-data-structure-li-chao-integer>
 

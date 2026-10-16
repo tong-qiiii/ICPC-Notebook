@@ -167,3 +167,6 @@
 
 // 动态规划
 #include "sections/10_dp.typ"
+
+// 概率与期望
+#include "sections/11_probability.typ"

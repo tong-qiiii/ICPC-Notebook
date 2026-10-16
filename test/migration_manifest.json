@@ -2,6 +2,26 @@
   {
     "chapter": 4,
     "topic": "data_structure",
+    "additions": [
+      {
+        "heading": "Segment Tree Beats：区间最值与加法",
+        "templates": [
+          "code/data_structure/segment_tree_beats.hpp"
+        ]
+      },
+      {
+        "heading": "zkw 线段树：单点修改",
+        "templates": [
+          "code/data_structure/zkw_segment_tree_point.hpp"
+        ]
+      },
+      {
+        "heading": "zkw 线段树：区间加与区间和",
+        "templates": [
+          "code/data_structure/zkw_segment_tree_lazy.hpp"
+        ]
+      }
+    ],
     "raw": "raw/04_data_structure.md",
     "raw_sha256": "e40de259fda8719004f11a644148de1375a92c64330469ec18c786412802f29a",
     "cpp_blocks": 79,
@@ -803,6 +823,92 @@
         "heading": "CDQ 优化三维偏序 DP",
         "templates": [
           "code/dp/cdq_dominance.hpp"
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": 11,
+    "topic": "probability",
+    "section": "sections/11_probability.typ",
+    "items": [],
+    "additions": [
+      {
+        "heading": "distributions",
+        "templates": [
+          "code/probability/distributions.hpp"
+        ]
+      },
+      {
+        "heading": "bernoulli_dp",
+        "templates": [
+          "code/probability/bernoulli_dp.hpp"
+        ]
+      },
+      {
+        "heading": "walk_steps",
+        "templates": [
+          "code/probability/walk_steps.hpp"
+        ]
+      },
+      {
+        "heading": "dag_expect",
+        "templates": [
+          "code/probability/dag_expect.hpp"
+        ]
+      },
+      {
+        "heading": "sugoroku_expect",
+        "templates": [
+          "code/probability/sugoroku_expect.hpp"
+        ]
+      },
+      {
+        "heading": "sushi_expect",
+        "templates": [
+          "code/probability/sushi_expect.hpp"
+        ]
+      },
+      {
+        "heading": "markov_absorb",
+        "templates": [
+          "code/probability/markov_absorb.hpp"
+        ]
+      },
+      {
+        "heading": "walk_line",
+        "templates": [
+          "code/probability/walk_line.hpp"
+        ]
+      },
+      {
+        "heading": "tree_walk",
+        "templates": [
+          "code/probability/tree_walk.hpp"
+        ]
+      },
+      {
+        "heading": "coupon_expect",
+        "templates": [
+          "code/probability/coupon_expect.hpp"
+        ]
+      },
+      {
+        "heading": "random_length",
+        "templates": [
+          "code/probability/random_length.hpp"
+        ]
+      },
+      {
+        "heading": "run_moments",
+        "templates": [
+          "code/probability/run_moments.hpp"
+        ]
+      },
+      {
+        "heading": "damage_expect",
+        "templates": [
+          "code/probability/damage_expect.hpp"
         ]
       }
     ]

@@ -2,7 +2,7 @@
 
 用于整理 ICPC 竞赛算法模板、说明和验证用例，并使用 Typst 编译为便于查阅的 PDF Notebook。
 
-已迁移第 1～10 章，完整导入 `main.typ`。第 4～10 章的 121 个原始条目整理为 140 份模板，重要变体分别保留；完整文件清单、修复及验证范围见 [migration_report.md](migration_report.md)。`raw/` 永久保存原始 Markdown 备份，不修改其中任何文件。
+已迁移第 1～10 章，并新增第 11 章“概率与期望”，全部导入 `main.typ`。第 4～10 章的 121 个原始条目整理为 140 份模板，重要变体分别保留；完整文件清单、修复及验证范围见 [migration_report.md](migration_report.md)。`raw/` 永久保存原始 Markdown 备份，不修改其中任何文件。
 
 ## 目录结构
 
@@ -27,10 +27,10 @@ ICPC-Notebook/
 │   ├── 09_string.md
 │   └── 10_dp.md
 ├── migration_report.md # 第 4～10 章迁移、修复与验证清单
-├── sections/       # 01_tools.typ ～ 10_dp.typ
+├── sections/       # 01_tools.typ ～ 11_probability.typ
 ├── code/           # basic/、graph/、tree/、data_structure/、interval_greedy/
-│                   # math/、geometry/、poly/、string/、dp/
-└── test/           # 十章测试、随机对拍、独立编译及 PDF 调用验证
+│                   # math/、geometry/、poly/、string/、dp/、probability/
+└── test/           # 各章测试、随机对拍、独立编译及 PDF 调用验证
 ```
 
 三个目录保留初始化时的 `.gitkeep`。
@@ -77,7 +77,9 @@ typst compile main.typ ICPC-Notebook.pdf
 typst watch main.typ ICPC-Notebook.pdf
 ```
 
-`main.typ` 已启用十章，显示章节号按 include 的实际顺序自动生成。章节内的二级算法标题按位置连续编号，原稿编号只保存在来源信息中。现有文件名前缀是稳定的维护地址，不绑定显示编号。章节路径和导入规则见 [Typst 官方文档](https://typst.app/docs/reference/scripting/#modules)。
+`main.typ` 已启用十一章，显示章节号按 include 的实际顺序自动生成。章节内的二级算法标题按位置连续编号，原稿编号只保存在来源信息中。现有文件名前缀是稳定的维护地址，不绑定显示编号。章节路径和导入规则见 [Typst 官方文档](https://typst.app/docs/reference/scripting/#modules)。
+
+使用 VS Code 时，以仓库根目录打开工作区。`.vscode/settings.json` 已按 [Tinymist 的多文件配置](https://myriad-dreamin.github.io/tinymist/feature/compiler-settings.html) 将检查入口固定为 `main.typ`，并使用相同的缓存字体；默认不自动导出 PDF。`sections/*.typ` 是章节片段，不能单独编译：它们依赖总入口中的标题编号、全局样式和其他章节标签，单独检查会出现“无法引用未编号标题”或“标签不存在”。已有编辑器会话若仍显示这些错误，执行 `Developer: Reload Window` 重新载入工作区配置。
 
 `ICPC-Notebook.pdf`、校验文件和字体缓存均不提交到 Git。CI 直接编译 `main.typ`，章节及所有排版以此入口为准；尚未启用的章节不会自动加入 PDF。
 
@@ -161,6 +163,8 @@ python test/basic/run_tests.py
 
 脚本会检查头文件独立编译、章节调用示例及多个翻译单元链接，并分别运行提交模式和 `-DLOCAL` 模式的边界与随机测试。可通过 `CXX` 环境变量指定编译器。可执行文件和对拍输入输出仅写入临时目录，不污染仓库。
 
+实数二分、整数三分和实数三分采用函数式接口；三分默认求最小值，传 `greater<>` 求最大值。测试包含整数三分暴力对拍、实数搜索已知答案、端点与最优平台、整数极值、浮点停滞，以及个人基础模板兼容和新增调用示例的复制运行。二分要求判定单调；三分要求两侧严格单调，允许最优值平台，不能直接用于任意阶梯函数。
+
 ## 图论验证与比赛使用
 
 图论章节遵循 [STYLE.md](STYLE.md) 的个人基础模板和码风。原文 34 个小节拆为 37 个独立模板：Floyd 与传递闭包分别维护，带权并查集分为加法、XOR、模 k 三版。完整拆分、接口及限制见 `sections/02_graph.typ`。
@@ -175,24 +179,38 @@ python test/graph/run_tests.py
 
 ## 树论验证与比赛使用
 
-树论完整对应 `raw/03_tree.md` 的 3.1-3.9，保留 9 个独立轻量 struct：倍增 LCA、树剖 LCA、Tarjan 离线 LCA、HLD、虚树、DSU on Tree、点分治、Kruskal 重构树和 LCT。源码、接口、复杂度、最小调用示例、适用边界及现场记忆分别见 `code/tree/` 和 `sections/03_tree.typ`，顺序与原稿一致。
+树论保留 `raw/03_tree.md` 的全部 9 份轻量 struct，并在章首补充 3 份函数式模板：两次 DFS 求直径、一次树形 DP 求直径、求全部树重心，共 12 份。两次 DFS 要求非负边权；DP 允许负边和零边路径；重心按节点数计算。原有算法相对顺序保留，显示编号自动更新。源码、接口、复杂度、最小调用示例、适用边界及现场记忆分别见 `code/tree/` 和 `sections/03_tree.typ`。
 
 ```sh
 python test/tree/run_tests.py
 ```
 
-脚本在 C++17 独立头文件模式和 GNU++17 个人基础模板模式下，检查全部模板、边界、多次初始化、换根和随机对拍；另编译运行 9 份 PDF 调用示例，并检查多翻译单元链接。使用断言、标准库边界检查及 `-ftrapv`，中间文件仅写入系统临时目录。
+脚本在 C++17 独立头文件模式和 GNU++17 个人基础模板模式下，检查全部模板、边界、多次初始化、换根和随机对拍；另编译运行 12 份 Notebook 调用示例，并检查多翻译单元链接。直径对全源路径枚举，重心对逐点删除后的连通块枚举进行对拍。使用断言、标准库边界检查及 `-ftrapv`，中间文件仅写入系统临时目录。
 
 本章保留递归 DFS，深链应评估栈空间；LCT 仍为迭代 Splay。点分治内部使用 GCC `__int128` 累加距离，避免 `ll` 边权累加溢出；其余权值运算的 `ll` 范围约束见对应模板说明。PDF 展示的模板已包含标准头文件及 `ll` 兜底宏，移除的只有维护用 `#pragma once`，无需引用仓库头文件。
 
-## 十章完整验证
+## 全项目验证
 
 ```sh
 python test/run_all.py
 ```
 
-第 4～10 章也可分别运行 `python test/<topic>/run_tests.py`，topic 为 `data_structure`、`interval_greedy`、`math`、`geometry`、`poly`、`string`、`dp`。新测试检查独立 C++17 编译、个人基础模板宏兼容、多翻译单元链接、基础样例、边界及适用的随机对拍；`test/check_examples.py` 另编译运行 PDF 中展开依赖后的 140 份最小调用示例。`test/check_manifest.py` 核对原稿条目、文件对应关系、原始哈希及章节完整且不重复导入，允许调整导入顺序。
+第 4～10 章也可分别运行 `python test/<topic>/run_tests.py`，topic 为 `data_structure`、`interval_greedy`、`math`、`geometry`、`poly`、`string`、`dp`。新测试检查独立 C++17 编译、个人基础模板宏兼容、多翻译单元链接、基础样例、边界及适用的随机对拍；`test/check_examples.py` 另编译运行 PDF 中展开依赖后的最小调用示例，数量按章节自动统计。`test/check_manifest.py` 核对原稿条目、文件对应关系、原始哈希及章节完整且不重复导入，允许调整导入顺序；原稿以外的新增模板在清单的 `additions` 中单列。
+
+数据结构章补充了 Beats（区间取小 / 取大 / 加法与和、最值查询）、zkw 单点修改版和 zkw 区间加 / 和版。Beats 按节点信息与树框架分层；zkw 使用数值数组，区间版采用永久标记，无 Info/Tag 层。测试覆盖混合操作暴力对拍、极值及次值、非二次幂长度、祖先标记和多测重建。各版同名 `Seg` 独立选用，接口和赛场修改位置见章节说明。
 
 需 GCC（支持 `bits/stdc++.h` 与 `__int128`）、Python 3，以及高精度模板使用的 Boost.Multiprecision 头文件。Boost 不在默认搜索路径时，Linux / macOS 可设置 `CPLUS_INCLUDE_PATH=/path/to/boost`，PowerShell 可设置 `$env:CPLUS_INCLUDE_PATH = 'D:/path/to/boost'`，该目录下应存在 `boost/multiprecision/cpp_int.hpp`。不必链接 Boost 二进制库。可通过 `CXX` 指定 GCC；测试产物放入临时目录，Python 缓存由 Git 忽略。
 
 各新章节的依赖直接在 PDF 中展开。组合多个模板时，共用实现只复制一次；同名 `Info`、`Tag`、`Seg`、`Node` 等独立版本按题选择，不要求它们能在同一作用域同时包含。莫队、数位 DP 等回调骨架仍需实现题意维护；WQS、分治 / Knuth 优化的数学条件以及浮点几何误差应按实际题目复核，测试通过不替代这些前提。
+
+
+## 概率与期望专题
+
+第 11 章位于 `sections/11_probability.typ`，包含 15 个主题、13 份 C++17 模板：条件概率、指示变量与方差、常见分布、独立成功次数 DP、固定步数游走、自环与逆拓扑期望、后缀和优化、Sushi 状态压缩、吸收马尔可夫链、一维与树上随机游走、收集齐、随机停止长度、连续段矩以及模意义期望。每个可执行模板均提供最小调用、限制和现场记忆；例题含自拟小模型与 AtCoder 官方题目链接。
+
+```sh
+python test/probability/run_tests.py
+python test/check_examples.py probability
+```
+
+验证包含枚举、尾概率求和、容斥和独立线性方程对照，以及 Coins、Sushi、Sugoroku 3/4、Critical Hit 的官方样例。`test/run_all.py` 已自动覆盖该专题；模板在 `test/migration_manifest.json` 中以新增章节登记，不伪造原始备份。吸收链通过图可达性区分无限期望，但高斯精度仍受已有 `GaussD::EPS` 限制；近奇异、小逃逸概率、无限状态过程及新题建模需另行判断。默认不导出本地完整 PDF，正式版本由 GitHub Actions 构建。

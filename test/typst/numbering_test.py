@@ -48,6 +48,12 @@ def edit_blocks(sources, filename, edit):
     sources[filename] = prefix + "".join(blocks)
 
 
+def remove_algorithm(blocks, identity):
+    index = next(i for i, block in enumerate(blocks)
+                 if f'<{identity}>' in block.splitlines()[0])
+    blocks.pop(index)
+
+
 def expected_headings(main, sources):
     """Derive expected positions from markup, never from numeric filenames."""
     expected = []
@@ -184,7 +190,7 @@ def main():
                     blocks[1], blocks[4] = blocks[4], blocks[1]
                 edit_blocks(sources, tree, swap)
             elif scenario == "delete":
-                edit_blocks(sources, tree, lambda b: b.pop(3))
+                edit_blocks(sources, tree, lambda b: remove_algorithm(b, "algo-tree-hld"))
             elif scenario == "move_across_chapters":
                 moved = []
                 edit_blocks(sources, "10_dp.typ", lambda b: moved.append(b.pop(1)))
@@ -203,7 +209,7 @@ def main():
                     "=== 临时分类 <detail-test-category>\n\n分类说明。\n\n"
                     "==== 临时接口 <detail-test-interface>\n\n接口说明。\n\n"))
             elif scenario == "deleted_reference":
-                edit_blocks(sources, tree, lambda b: b.pop(0))
+                edit_blocks(sources, tree, lambda b: remove_algorithm(b, "algo-tree-lca"))
 
             expected = expected_headings(entry, sources)
             entry += "\n\n" + "\n\n".join(
