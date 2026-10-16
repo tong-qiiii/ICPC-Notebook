@@ -5,7 +5,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 TOPICS = ["basic", "graph", "tree", "data_structure", "interval_greedy",
-          "math", "geometry", "poly", "string", "dp", "probability"]
+          "math", "geometry", "poly", "string", "dp", "probability", "counting"]
 
 
 def main():

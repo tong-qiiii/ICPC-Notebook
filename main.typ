@@ -170,3 +170,6 @@
 
 // 概率与期望
 #include "sections/11_probability.typ"
+
+// 组合计数与反演
+#include "sections/12_counting.typ"

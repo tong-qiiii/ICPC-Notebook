@@ -912,5 +912,55 @@
         ]
       }
     ]
+  },
+  {
+    "chapter": 12,
+    "topic": "counting",
+    "section": "sections/12_counting.typ",
+    "items": [],
+    "additions": [
+      {
+        "heading": "二项式反演",
+        "templates": [
+          "code/counting/binomial_transform.hpp"
+        ]
+      },
+      {
+        "heading": "约数和与倍数和反演",
+        "templates": [
+          "code/counting/divisor_transform.hpp"
+        ]
+      },
+      {
+        "heading": "欧拉变换与逆变换",
+        "templates": [
+          "code/counting/euler_transform.hpp"
+        ]
+      },
+      {
+        "heading": "两类 Stirling 数",
+        "templates": [
+          "code/counting/stirling.hpp"
+        ]
+      },
+      {
+        "heading": "错排、Catalan、Eulerian 数",
+        "templates": [
+          "code/counting/count_sequences.hpp"
+        ]
+      },
+      {
+        "heading": "整数分拆五边形递推",
+        "templates": [
+          "code/counting/partition_numbers.hpp"
+        ]
+      },
+      {
+        "heading": "有界整数解计数",
+        "templates": [
+          "code/counting/bounded_sum.hpp"
+        ]
+      }
+    ]
   }
 ]

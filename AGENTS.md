@@ -6,6 +6,7 @@
 - `raw/` 是永久保存的原始 Markdown 备份。不得修改、删除、重命名、移动或自动格式化其中的任何文件。
 - 原始资料仅供参考；后续整理成果写入 `sections/`、`code/` 和 `test/`。
 - 当前已迁移第 1～10 章，并新增第 11 章“概率与期望”（`sections/11_probability.typ`、`code/probability/`、`test/probability/`）。原批量迁移清单及验证范围见 [migration_report.md](migration_report.md)。后续仅按用户明确指定的章节或算法继续维护。
+- 第 12 章“组合计数与反演”位于 `sections/12_counting.typ`，新增实现和测试分别在 `code/counting/`、`test/counting/`；以模型、公式推导和适用条件为主，已有数学 / 多项式模板使用稳定标签引用，不重复展示源码。
 
 ## 目录职责
 
@@ -49,6 +50,7 @@
 - 现有章节文件采用 `NN_topic.typ`，前缀是迁移时的文件标识，不是显示编号；调整章节顺序只调整 main.typ 的导入位置，不重命名文件。新文件使用稳定的小写主题名称，兼容已有前缀，不从文件名计算显示编号。
 - 预留章节名称：`01_tools.typ`、`02_graph.typ`、`03_tree.typ`、`04_data_structure.typ`、`05_interval_greedy.typ`、`06_math.typ`、`07_geometry.typ`、`08_poly.typ`、`09_string.typ`、`10_dp.typ`。
 - 第十一章使用 `11_probability.typ`，维护概率基础、分布、概率 DP、随机游走和期望模型；其测试入口为 `python test/probability/run_tests.py`。新专题没有对应原稿时，在模板清单中单列，不新建或修改 `raw/`。
+- 第十二章使用 `12_counting.typ`，维护计数模型、恒等式及反演；测试入口为 `python test/counting/run_tests.py`。公式需写明参数、上下界、空对象、符号和模除法前提，小规模验证不能替代一般适用性证明。
 - `raw/08_Poly.md` 保留原始大小写，不为统一命名而修改备份。
 - 后续算法文件采用 `code/<topic>/<algorithm>.hpp` 或 `.cpp`；对应测试采用 `test/<topic>/<algorithm>_test.cpp`。
 - C++ 类型采用 `PascalCase`，函数和变量采用 `snake_case`，常量采用 `UPPER_SNAKE_CASE`；数学中的短变量名可以按惯例使用。

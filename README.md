@@ -2,7 +2,7 @@
 
 用于整理 ICPC 竞赛算法模板、说明和验证用例，并使用 Typst 编译为便于查阅的 PDF Notebook。
 
-已迁移第 1～10 章，并新增第 11 章“概率与期望”，全部导入 `main.typ`。第 4～10 章的 121 个原始条目整理为 140 份模板，重要变体分别保留；完整文件清单、修复及验证范围见 [migration_report.md](migration_report.md)。`raw/` 永久保存原始 Markdown 备份，不修改其中任何文件。
+已迁移第 1～10 章，并新增第 11 章“概率与期望”、第 12 章“组合计数与反演”，全部导入 `main.typ`。第 4～10 章的 121 个原始条目整理为 140 份模板，重要变体分别保留；完整文件清单、修复及验证范围见 [migration_report.md](migration_report.md)。`raw/` 永久保存原始 Markdown 备份，不修改其中任何文件。
 
 ## 目录结构
 
@@ -27,9 +27,9 @@ ICPC-Notebook/
 │   ├── 09_string.md
 │   └── 10_dp.md
 ├── migration_report.md # 第 4～10 章迁移、修复与验证清单
-├── sections/       # 01_tools.typ ～ 11_probability.typ
+├── sections/       # 01_tools.typ ～ 12_counting.typ
 ├── code/           # basic/、graph/、tree/、data_structure/、interval_greedy/
-│                   # math/、geometry/、poly/、string/、dp/、probability/
+│                   # math/、geometry/、poly/、string/、dp/、probability/、counting/
 └── test/           # 各章测试、随机对拍、独立编译及 PDF 调用验证
 ```
 
@@ -77,7 +77,7 @@ typst compile main.typ ICPC-Notebook.pdf
 typst watch main.typ ICPC-Notebook.pdf
 ```
 
-`main.typ` 已启用十一章，显示章节号按 include 的实际顺序自动生成。章节内的二级算法标题按位置连续编号，原稿编号只保存在来源信息中。现有文件名前缀是稳定的维护地址，不绑定显示编号。章节路径和导入规则见 [Typst 官方文档](https://typst.app/docs/reference/scripting/#modules)。
+`main.typ` 已启用十二章，显示章节号按 include 的实际顺序自动生成。章节内的二级算法标题按位置连续编号，原稿编号只保存在来源信息中。现有文件名前缀是稳定的维护地址，不绑定显示编号。章节路径和导入规则见 [Typst 官方文档](https://typst.app/docs/reference/scripting/#modules)。
 
 使用 VS Code 时，以仓库根目录打开工作区。`.vscode/settings.json` 已按 [Tinymist 的多文件配置](https://myriad-dreamin.github.io/tinymist/feature/compiler-settings.html) 将检查入口固定为 `main.typ`，并使用相同的缓存字体；默认不自动导出 PDF。`sections/*.typ` 是章节片段，不能单独编译：它们依赖总入口中的标题编号、全局样式和其他章节标签，单独检查会出现“无法引用未编号标题”或“标签不存在”。已有编辑器会话若仍显示这些错误，执行 `Developer: Reload Window` 重新载入工作区配置。
 
@@ -214,3 +214,17 @@ python test/check_examples.py probability
 ```
 
 验证包含枚举、尾概率求和、容斥和独立线性方程对照，以及 Coins、Sushi、Sugoroku 3/4、Critical Hit 的官方样例。`test/run_all.py` 已自动覆盖该专题；模板在 `test/migration_manifest.json` 中以新增章节登记，不伪造原始备份。吸收链通过图可达性区分无限期望，但高斯精度仍受已有 `GaussD::EPS` 限制；近奇异、小逃逸概率、无限状态过程及新题建模需另行判断。默认不导出本地完整 PDF，正式版本由 GitHub Actions 构建。
+
+
+## 组合计数与反演专题
+
+第 12 章位于 `sections/12_counting.typ`，按“对象定义、公式、推导、例子、适用边界”整理 40 个主题，覆盖十二重计数、隔板与有界拆分、容斥与错排、Stirling/Bell/Lah/Eulerian 数、Catalan/Ballot/Fuss–Catalan、整数分拆、生成函数、二项式/子集/约数/倍数反演、φ 加权反演与欧拉变换、GCD/LCM 求和、Burnside/Pólya、非周期串、标号树、矩阵树/LGV、有限域、Hook-length 与染色多项式。
+
+参考 [thedyingkai 的仓库](https://github.com/thedyingkai/XCPC-Template-by-thedyingkai_/tree/04355d0a0ac07913df2629fbfa6f12ef5eb6958e/组合计数)（固定提交 `04355d0`），并在章节中给出 NIST、OEIS 与 MIT 的相关来源。已有 Comb、Lucas、μ/φ 筛、互质计数、FPS 等实现通过稳定引用跳转，不重复展开源码；新增 7 份轻量 C++17 模板，各有独立测试与最小调用。
+
+```sh
+python test/counting/run_tests.py
+python test/check_examples.py counting
+```
+
+公式测试使用精确整数 / 分数，包含小规模枚举、有限差分、容斥、反演、群轨道、路径族、树、有限域矩阵与 Young 图可移角对照。它验证的是明确有限范围的样例，不代替一般定理证明；新题仍须检查对象标号、边界、符号、群作用、LGV 配对条件及模分母。任意模组合数、通用 determinant 等仅给实现路线，不宣称项目已有相应独立板子。默认不自动构建完整 PDF，也不提交、推送或发布。
