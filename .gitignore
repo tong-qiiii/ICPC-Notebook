@@ -1,5 +1,16 @@
-# Generated Notebook files and downloaded fonts.
+# Generated Notebook files.
 /ICPC-Notebook.pdf
 /ICPC-Notebook.pdf.sha256
 /notebook.pdf
-/.cache/notebook-fonts/
+
+# Downloaded fonts, one-off migration scripts and local QA outputs.
+/.cache/
+
+# Compiled test outputs; keep source and expected-output fixtures visible.
+*.exe
+*.o
+*.obj
+
+# Python test runner caches.
+__pycache__/
+*.pyc

@@ -43,6 +43,8 @@
 #show quote: set text(size: 6.45pt)
 #show quote: set pad(x: 0.35em)
 
+// Native heading counters follow document order; labels identify algorithms.
+// Only levels 1 (chapter) and 2 (algorithm) take display numbers.
 #set heading(numbering: "1.1")
 #show heading.where(level: 3): set heading(numbering: none, outlined: false)
 #show heading.where(level: 4): set heading(numbering: none, outlined: false)
@@ -136,32 +138,32 @@
 #pagebreak()
 
 
-// 01 工具
+// 工具
 #include "sections/01_tools.typ"
 
-// 02 图论
+// 图论
 #include "sections/02_graph.typ"
 
-// 03 树
+// 树
 #include "sections/03_tree.typ"
 
-// 04 数据结构
-// #include "sections/04_data_structure.typ"
+// 数据结构
+#include "sections/04_data_structure.typ"
 
-// 05 区间与贪心
-// #include "sections/05_interval_greedy.typ"
+// 区间与贪心
+#include "sections/05_interval_greedy.typ"
 
-// 06 数学
-// #include "sections/06_math.typ"
+// 数学
+#include "sections/06_math.typ"
 
-// 07 计算几何
-// #include "sections/07_geometry.typ"
+// 计算几何
+#include "sections/07_geometry.typ"
 
-// 08 多项式
-// #include "sections/08_poly.typ"
+// 多项式
+#include "sections/08_poly.typ"
 
-// 09 字符串
-// #include "sections/09_string.typ"
+// 字符串
+#include "sections/09_string.typ"
 
-// 10 动态规划
-// #include "sections/10_dp.typ"
+// 动态规划
+#include "sections/10_dp.typ"

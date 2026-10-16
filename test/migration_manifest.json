@@ -1,0 +1,810 @@
+[
+  {
+    "chapter": 4,
+    "topic": "data_structure",
+    "raw": "raw/04_data_structure.md",
+    "raw_sha256": "e40de259fda8719004f11a644148de1375a92c64330469ec18c786412802f29a",
+    "cpp_blocks": 79,
+    "items": [
+      {
+        "heading": "4.1 单调队列：滑动窗口最小值 / 最大值",
+        "templates": [
+          "code/data_structure/sliding_window.hpp"
+        ]
+      },
+      {
+        "heading": "4.2 单调栈：左右最近严格更小元素",
+        "templates": [
+          "code/data_structure/monotonic_stack.hpp"
+        ]
+      },
+      {
+        "heading": "笛卡尔树 - 单调栈建树",
+        "templates": [
+          "code/data_structure/cartesian_tree.hpp"
+        ]
+      },
+      {
+        "heading": "4.3 ST 表：区间最大值",
+        "templates": [
+          "code/data_structure/sparse_table.hpp"
+        ]
+      },
+      {
+        "heading": "4.4 Fenwick 树：动态集合第 k 小",
+        "templates": [
+          "code/data_structure/fenwick_kth.hpp"
+        ]
+      },
+      {
+        "heading": "4.5 线性基",
+        "templates": [
+          "code/data_structure/linear_basis.hpp"
+        ]
+      },
+      {
+        "heading": "4.6 普通莫队",
+        "templates": [
+          "code/data_structure/mo.hpp"
+        ]
+      },
+      {
+        "heading": "4.7 带修莫队",
+        "templates": [
+          "code/data_structure/mo_updates.hpp"
+        ]
+      },
+      {
+        "heading": "4.8 只增回滚莫队",
+        "templates": [
+          "code/data_structure/mo_rollback_add.hpp",
+          "code/data_structure/mo_max_span.hpp"
+        ]
+      },
+      {
+        "heading": "4.9 只删回滚莫队",
+        "templates": [
+          "code/data_structure/mo_rollback_delete.hpp"
+        ]
+      },
+      {
+        "heading": "4.10 树上莫队",
+        "templates": [
+          "code/data_structure/mo_tree.hpp"
+        ]
+      },
+      {
+        "heading": "4.11 二次离线莫队：二元组贡献",
+        "templates": [
+          "code/data_structure/mo_second_offline.hpp"
+        ]
+      },
+      {
+        "heading": "4.12 值域分块：频次 / 第 k 小 / 前驱后继",
+        "templates": [
+          "code/data_structure/value_block.hpp"
+        ]
+      },
+      {
+        "heading": "4.13 序列分块：区间加 / 区间和",
+        "templates": [
+          "code/data_structure/sequence_block.hpp"
+        ]
+      },
+      {
+        "heading": "4.14 InfoTag 线段树",
+        "templates": [
+          "code/data_structure/segment_tree_lazy.hpp"
+        ]
+      },
+      {
+        "heading": "4.15 Info 线段树：单点修改",
+        "templates": [
+          "code/data_structure/segment_tree_point.hpp"
+        ]
+      },
+      {
+        "heading": "4.16 李超线段树：整数最大值",
+        "templates": [
+          "code/data_structure/li_chao_integer.hpp"
+        ]
+      },
+      {
+        "heading": "4.17 李超线段树：浮点系数最大值（整数横坐标）",
+        "templates": [
+          "code/data_structure/li_chao_double.hpp"
+        ]
+      },
+      {
+        "heading": "4.18 栈维护凸包最值",
+        "templates": [
+          "code/data_structure/line_hull.hpp"
+        ]
+      },
+      {
+        "heading": "4.19 动态开点线段树：区间赋值 + 剩余数量",
+        "templates": [
+          "code/data_structure/dynamic_segment_tree.hpp"
+        ]
+      },
+      {
+        "heading": "4.20 线段树合并：点计数 + 区间最值",
+        "templates": [
+          "code/data_structure/segment_tree_merge.hpp"
+        ]
+      },
+      {
+        "heading": "主席树：Info 单点修改",
+        "templates": [
+          "code/data_structure/persistent_segment_tree_point.hpp"
+        ]
+      },
+      {
+        "heading": "主席树：InfoTag 区间修改",
+        "templates": [
+          "code/data_structure/persistent_segment_tree_lazy.hpp"
+        ]
+      },
+      {
+        "heading": "主席树：值域计数",
+        "templates": [
+          "code/data_structure/persistent_segment_tree_count.hpp"
+        ]
+      },
+      {
+        "heading": "主席树：区间不同颜色数量",
+        "templates": [
+          "code/data_structure/persistent_distinct.hpp"
+        ]
+      },
+      {
+        "heading": "主席树：区间 mex",
+        "templates": [
+          "code/data_structure/persistent_mex.hpp"
+        ]
+      },
+      {
+        "heading": "主席树：树上第 k 小",
+        "templates": [
+          "code/data_structure/persistent_tree_kth.hpp"
+        ]
+      },
+      {
+        "heading": "4.23 可持久化 01 Trie",
+        "templates": [
+          "code/data_structure/persistent_trie.hpp"
+        ]
+      },
+      {
+        "heading": "4.24 前缀线性基：区间异或最大值",
+        "templates": [
+          "code/data_structure/prefix_linear_basis.hpp"
+        ]
+      },
+      {
+        "heading": "4.25 FHQ Treap：按值平衡树",
+        "templates": [
+          "code/data_structure/fhq_set.hpp"
+        ]
+      },
+      {
+        "heading": "4.26 FHQ Treap：隐式序列",
+        "templates": [
+          "code/data_structure/fhq_sequence.hpp"
+        ]
+      },
+      {
+        "heading": "4.27 可持久化 FHQ Treap：按值平衡树",
+        "templates": [
+          "code/data_structure/persistent_fhq_set.hpp"
+        ]
+      },
+      {
+        "heading": "4.28 可持久化 FHQ Treap：隐式序列",
+        "templates": [
+          "code/data_structure/persistent_fhq_sequence.hpp"
+        ]
+      },
+      {
+        "heading": "4.29 可持久化隐式 FHQ：区间和扩展",
+        "templates": [
+          "code/data_structure/persistent_fhq_sum.hpp"
+        ]
+      },
+      {
+        "heading": "4.30 树状数组：动态第 k 小 / 前 k 小之和",
+        "templates": [
+          "code/data_structure/fenwick_k_sum.hpp"
+        ]
+      },
+      {
+        "heading": "4.31 双 multiset 维护前 k 小之和",
+        "templates": [
+          "code/data_structure/multiset_k_sum.hpp"
+        ]
+      },
+      {
+        "heading": "4.32 set 维护不相交区间集合",
+        "templates": [
+          "code/data_structure/interval_union.hpp"
+        ]
+      },
+      {
+        "heading": "4.33 set 维护不相交区间集合",
+        "templates": [
+          "code/data_structure/interval_ids.hpp"
+        ]
+      },
+      {
+        "heading": "4.34 高精度整数 `cpp_int`",
+        "templates": [
+          "code/data_structure/big_integer.hpp"
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": 5,
+    "topic": "interval_greedy",
+    "raw": "raw/05_interval_greedy.md",
+    "raw_sha256": "e9a701051d1f76e3d7f3511247cfcbc9babdc0dec4e84691ed0f20ad76b030d8",
+    "cpp_blocks": 11,
+    "items": [
+      {
+        "heading": "5.1 区间集合合法二元组计数",
+        "templates": [
+          "code/interval_greedy/count_pairs_small.hpp",
+          "code/interval_greedy/count_pairs_large.hpp"
+        ]
+      },
+      {
+        "heading": "5.2 区间最小点覆盖 / 最大不相交区间数",
+        "templates": [
+          "code/interval_greedy/min_points.hpp",
+          "code/interval_greedy/max_disjoint.hpp"
+        ]
+      },
+      {
+        "heading": "5.3 区间分组",
+        "templates": [
+          "code/interval_greedy/interval_group.hpp"
+        ]
+      },
+      {
+        "heading": "5.4 区间覆盖目标区间",
+        "templates": [
+          "code/interval_greedy/min_cover.hpp"
+        ]
+      },
+      {
+        "heading": "5.5 双指针模板",
+        "templates": [
+          "code/interval_greedy/window_longest.hpp",
+          "code/interval_greedy/window_shortest.hpp",
+          "code/interval_greedy/two_ends.hpp"
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": 6,
+    "topic": "math",
+    "raw": "raw/06_math.md",
+    "raw_sha256": "a30f3bf865ce4b663f68ff6de9392bc026ed3489ebb39203e7eb175f9c9f16d8",
+    "cpp_blocks": 29,
+    "items": [
+      {
+        "heading": "6.1 ModInt / 快速幂 / 逆元 / 扩展欧几里得",
+        "templates": [
+          "code/math/modint.hpp",
+          "code/math/qpow.hpp",
+          "code/math/extended_gcd.hpp",
+          "code/math/inverse_mod.hpp"
+        ]
+      },
+      {
+        "heading": "6.2 组合数预处理：阶乘 / 逆阶乘",
+        "templates": [
+          "code/math/combination.hpp"
+        ]
+      },
+      {
+        "heading": "6.3 Lucas 定理",
+        "templates": [
+          "code/math/lucas.hpp"
+        ]
+      },
+      {
+        "heading": "6.4 整除分块",
+        "templates": [
+          "code/math/division_blocks.hpp"
+        ]
+      },
+      {
+        "heading": "6.5 线性筛",
+        "templates": [
+          "code/math/linear_sieve.hpp"
+        ]
+      },
+      {
+        "heading": "6.6 欧拉函数 / 莫比乌斯函数：线性筛",
+        "templates": [
+          "code/math/multi_sieve.hpp"
+        ]
+      },
+      {
+        "heading": "6.7 莫比乌斯反演：互质对数",
+        "templates": [
+          "code/math/mobius_pairs.hpp"
+        ]
+      },
+      {
+        "heading": "6.8 矩阵快速幂",
+        "templates": [
+          "code/math/matrix_power.hpp"
+        ]
+      },
+      {
+        "heading": "6.9 高斯消元：实数线性方程组",
+        "templates": [
+          "code/math/gauss_double.hpp"
+        ]
+      },
+      {
+        "heading": "6.10 高斯消元：模素数线性方程组",
+        "templates": [
+          "code/math/gauss_mod.hpp"
+        ]
+      },
+      {
+        "heading": "6.11 容斥原理：子集枚举",
+        "templates": [
+          "code/math/subset_ie.hpp",
+          "code/math/div_any.hpp"
+        ]
+      },
+      {
+        "heading": "6.12 自适应辛普森积分",
+        "templates": [
+          "code/math/adaptive_simpson.hpp"
+        ]
+      },
+      {
+        "heading": "6.13 CRT 中国剩余定理",
+        "templates": [
+          "code/math/crt.hpp"
+        ]
+      },
+      {
+        "heading": "6.14 Miller-Rabin 素性测试",
+        "templates": [
+          "code/math/miller_rabin.hpp"
+        ]
+      },
+      {
+        "heading": "6.15 Pollard-Rho 大整数分解",
+        "templates": [
+          "code/math/pollard_rho.hpp"
+        ]
+      },
+      {
+        "heading": "6.16 BSGS / exBSGS 离散对数",
+        "templates": [
+          "code/math/bsgs.hpp"
+        ]
+      },
+      {
+        "heading": "6.17 floor_sum",
+        "templates": [
+          "code/math/floor_sum.hpp"
+        ]
+      },
+      {
+        "heading": "6.18 Cipolla / Tonelli-Shanks 模平方根",
+        "templates": [
+          "code/math/mod_sqrt.hpp"
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": 7,
+    "topic": "geometry",
+    "raw": "raw/07_geometry.md",
+    "raw_sha256": "163a626646746df22f43ad43bfa148f4064d72173fe48973fff464d86b5d87d6",
+    "cpp_blocks": 30,
+    "items": [
+      {
+        "heading": "7.1 二维几何基础",
+        "templates": [
+          "code/geometry/geometry_base.hpp"
+        ]
+      },
+      {
+        "heading": "7.2 直线与线段",
+        "templates": [
+          "code/geometry/line_segment.hpp"
+        ]
+      },
+      {
+        "heading": "7.3 三角形常用工具",
+        "templates": [
+          "code/geometry/triangle.hpp"
+        ]
+      },
+      {
+        "heading": "7.4 多边形基础",
+        "templates": [
+          "code/geometry/polygon.hpp"
+        ]
+      },
+      {
+        "heading": "7.5 格点多边形：Pick 定理",
+        "templates": [
+          "code/geometry/pick.hpp"
+        ]
+      },
+      {
+        "heading": "7.6 二维凸包 Andrew",
+        "templates": [
+          "code/geometry/convex_hull.hpp"
+        ]
+      },
+      {
+        "heading": "7.7 凸多边形点包含 O(log n)",
+        "templates": [
+          "code/geometry/convex_contains.hpp"
+        ]
+      },
+      {
+        "heading": "7.8 凸多边形点包含 O(log n)",
+        "templates": [
+          "code/geometry/convex_contains_variant.hpp"
+        ]
+      },
+      {
+        "heading": "7.9 旋转卡壳：凸包直径",
+        "templates": [
+          "code/geometry/convex_diameter.hpp"
+        ]
+      },
+      {
+        "heading": "7.10 旋转卡壳：最小面积外接矩形",
+        "templates": [
+          "code/geometry/bounding_rectangle.hpp"
+        ]
+      },
+      {
+        "heading": "7.11 最近点对",
+        "templates": [
+          "code/geometry/closest_pair.hpp"
+        ]
+      },
+      {
+        "heading": "7.12 半平面交",
+        "templates": [
+          "code/geometry/halfplane_intersection.hpp"
+        ]
+      },
+      {
+        "heading": "7.13 圆基础",
+        "templates": [
+          "code/geometry/circle.hpp"
+        ]
+      },
+      {
+        "heading": "7.14 圆的切线",
+        "templates": [
+          "code/geometry/circle_tangents.hpp"
+        ]
+      },
+      {
+        "heading": "7.15 最小圆覆盖",
+        "templates": [
+          "code/geometry/minimum_enclosing_circle.hpp"
+        ]
+      },
+      {
+        "heading": "7.16 Minkowski Sum",
+        "templates": [
+          "code/geometry/minkowski_sum.hpp"
+        ]
+      },
+      {
+        "heading": "7.17 Convex Hull Trick：单调直线凸包",
+        "templates": [
+          "code/geometry/monotone_cht.hpp"
+        ]
+      },
+      {
+        "heading": "7.18 三维几何基础",
+        "templates": [
+          "code/geometry/geometry_3d.hpp"
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": 8,
+    "topic": "poly",
+    "raw": "raw/08_Poly.md",
+    "raw_sha256": "f13b57278a83a6b8a2a9708801cb09bb22d1ee4c9f0c2276aa27921402fb6425",
+    "cpp_blocks": 21,
+    "items": [
+      {
+        "heading": "8.1 多项式核心 - NTT / Poly",
+        "templates": [
+          "code/poly/poly_core.hpp"
+        ]
+      },
+      {
+        "heading": "8.2 形式幂级数 FPS - 逆 / ln / exp / 幂 / sqrt / 三角函数",
+        "templates": [
+          "code/poly/fps.hpp"
+        ]
+      },
+      {
+        "heading": "8.3 多项式除法 / 多点求值 / 插值",
+        "templates": [
+          "code/poly/division_evaluation.hpp"
+        ]
+      },
+      {
+        "heading": "8.4 多项式平移 / Chirp-Z / 连续点值平移",
+        "templates": [
+          "code/poly/taylor_shift.hpp",
+          "code/poly/chirp_z.hpp",
+          "code/poly/consecutive_shift.hpp"
+        ]
+      },
+      {
+        "heading": "8.5 位运算卷积 - FWT XOR / OR / AND",
+        "templates": [
+          "code/poly/fwt_xor.hpp",
+          "code/poly/fwt_or.hpp",
+          "code/poly/fwt_and.hpp"
+        ]
+      },
+      {
+        "heading": "8.6 线性递推 - Bostan-Mori / Berlekamp-Massey",
+        "templates": [
+          "code/poly/bostan_mori.hpp",
+          "code/poly/linear_recurrence.hpp",
+          "code/poly/berlekamp_massey.hpp"
+        ]
+      },
+      {
+        "heading": "8.7 多项式复合 / 拉格朗日反演",
+        "templates": [
+          "code/poly/composition.hpp"
+        ]
+      },
+      {
+        "heading": "8.8 生成函数 OGF / EGF",
+        "templates": [
+          "code/poly/ogf.hpp",
+          "code/poly/egf.hpp"
+        ]
+      },
+      {
+        "heading": "8.9 多项式多点求值",
+        "templates": [
+          "code/poly/multipoint.hpp"
+        ]
+      },
+      {
+        "heading": "8.10 多项式快速插值",
+        "templates": [
+          "code/poly/fast_interpolation.hpp"
+        ]
+      },
+      {
+        "heading": "8.11 拉格朗日插值",
+        "templates": [
+          "code/poly/lagrange.hpp"
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": 9,
+    "topic": "string",
+    "raw": "raw/09_string.md",
+    "raw_sha256": "c86ebb3d25b699314e2287782a3f0c64ea90ca14b5a7928977c5ce43d44a938f",
+    "cpp_blocks": 25,
+    "items": [
+      {
+        "heading": "9.1 KMP / Prefix Function",
+        "templates": [
+          "code/string/kmp.hpp"
+        ]
+      },
+      {
+        "heading": "9.2 Z 函数",
+        "templates": [
+          "code/string/z_function.hpp"
+        ]
+      },
+      {
+        "heading": "9.3 Manacher：回文半径",
+        "templates": [
+          "code/string/manacher.hpp"
+        ]
+      },
+      {
+        "heading": "9.4 字符串哈希：双模数",
+        "templates": [
+          "code/string/hash_double.hpp"
+        ]
+      },
+      {
+        "heading": "9.5 Trie：字符串插入 / 前缀计数",
+        "templates": [
+          "code/string/trie.hpp"
+        ]
+      },
+      {
+        "heading": "9.6 01 Trie：最大异或 / 最小异或",
+        "templates": [
+          "code/string/trie01.hpp"
+        ]
+      },
+      {
+        "heading": "9.7 AC 自动机：多模式匹配",
+        "templates": [
+          "code/string/aho_corasick.hpp"
+        ]
+      },
+      {
+        "heading": "9.8 回文自动机 PAM",
+        "templates": [
+          "code/string/palindromic_tree.hpp"
+        ]
+      },
+      {
+        "heading": "9.9 后缀自动机 SAM",
+        "templates": [
+          "code/string/suffix_automaton.hpp"
+        ]
+      },
+      {
+        "heading": "9.10 后缀数组 SA：O(n log n)",
+        "templates": [
+          "code/string/suffix_array.hpp"
+        ]
+      },
+      {
+        "heading": "9.11 LCP / Height + RMQ",
+        "templates": [
+          "code/string/lcp_rmq.hpp"
+        ]
+      },
+      {
+        "heading": "9.12 Duval：Lyndon 分解",
+        "templates": [
+          "code/string/duval.hpp"
+        ]
+      },
+      {
+        "heading": "9.13 字符串最小表示法",
+        "templates": [
+          "code/string/minimum_rotation.hpp"
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": 10,
+    "topic": "dp",
+    "raw": "raw/10_dp.md",
+    "raw_sha256": "f5f31506ada06f28977fb9997e2025da46ce7f2a7f46c8918ac4bf60722debba",
+    "cpp_blocks": 44,
+    "items": [
+      {
+        "heading": "10.1 0/1、完全、多重、分组背包",
+        "templates": [
+          "code/dp/knapsack01.hpp",
+          "code/dp/knapsack_complete.hpp",
+          "code/dp/knapsack_bounded.hpp",
+          "code/dp/knapsack_group.hpp"
+        ]
+      },
+      {
+        "heading": "10.2 区间 DP（石子合并骨架）",
+        "templates": [
+          "code/dp/interval_merge.hpp"
+        ]
+      },
+      {
+        "heading": "10.3 树形 DP（最大权独立集骨架）",
+        "templates": [
+          "code/dp/tree_independent_set.hpp"
+        ]
+      },
+      {
+        "heading": "10.4 换根 DP（全点距离和）",
+        "templates": [
+          "code/dp/reroot_distance.hpp"
+        ]
+      },
+      {
+        "heading": "10.5 数位 DP（记忆化通用骨架）",
+        "templates": [
+          "code/dp/digit_dp.hpp"
+        ]
+      },
+      {
+        "heading": "10.6 状压 DP（Hamilton 路径 / TSP 骨架）",
+        "templates": [
+          "code/dp/hamilton_path.hpp"
+        ]
+      },
+      {
+        "heading": "10.7 轮廓线 DP（多米诺骨牌铺满）",
+        "templates": [
+          "code/dp/domino_tilings.hpp"
+        ]
+      },
+      {
+        "heading": "10.8 插头 DP（网格 Hamilton 单回路）",
+        "templates": [
+          "code/dp/plug_hamilton_cycle.hpp"
+        ]
+      },
+      {
+        "heading": "10.9 SOS DP（子集 / 超集和）",
+        "templates": [
+          "code/dp/sos_dp.hpp"
+        ]
+      },
+      {
+        "heading": "10.10 单调队列优化 DP",
+        "templates": [
+          "code/dp/monotone_queue_dp.hpp"
+        ]
+      },
+      {
+        "heading": "10.11 斜率优化 CHT",
+        "templates": [
+          "code/dp/cht_min.hpp"
+        ]
+      },
+      {
+        "heading": "10.12 分治优化 DP",
+        "templates": [
+          "code/dp/divide_conquer_dp.hpp"
+        ]
+      },
+      {
+        "heading": "10.13 Knuth 优化（区间 DP）",
+        "templates": [
+          "code/dp/knuth_merge.hpp"
+        ]
+      },
+      {
+        "heading": "10.14 Li Chao Tree 优化 DP",
+        "templates": [
+          "code/dp/li_chao_min.hpp"
+        ]
+      },
+      {
+        "heading": "10.15 Bitset 优化 DP（0/1 子集和）",
+        "templates": [
+          "code/dp/bitset_subset_sum.hpp"
+        ]
+      },
+      {
+        "heading": "10.16 WQS 二分 / Aliens Trick",
+        "templates": [
+          "code/dp/wqs.hpp"
+        ]
+      },
+      {
+        "heading": "CDQ 优化三维偏序 DP",
+        "templates": [
+          "code/dp/cdq_dominance.hpp"
+        ]
+      }
+    ]
+  }
+]

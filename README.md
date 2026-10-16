@@ -2,7 +2,7 @@
 
 用于整理 ICPC 竞赛算法模板、说明和验证用例，并使用 Typst 编译为便于查阅的 PDF Notebook。
 
-已迁移基础工具、图论和树论三章，对应 `sections/01_tools.typ`、`sections/02_graph.typ`、`sections/03_tree.typ` 及 `code/basic/`、`code/graph/`、`code/tree/`；其余章节仍保留导入占位。`raw/` 永久保存原始 Markdown 备份，不修改其中任何文件。
+已迁移第 1～10 章，完整导入 `main.typ`。第 4～10 章的 121 个原始条目整理为 140 份模板，重要变体分别保留；完整文件清单、修复及验证范围见 [migration_report.md](migration_report.md)。`raw/` 永久保存原始 Markdown 备份，不修改其中任何文件。
 
 ## 目录结构
 
@@ -26,12 +26,18 @@ ICPC-Notebook/
 │   ├── 08_Poly.md
 │   ├── 09_string.md
 │   └── 10_dp.md
-├── sections/       # 已迁移工具、图论、树论三章
-├── code/           # GNU++17 模板：basic/、graph/、tree/
-└── test/           # 对应 basic/、graph/、tree/ 的测试和对拍工具
+├── migration_report.md # 第 4～10 章迁移、修复与验证清单
+├── sections/       # 01_tools.typ ～ 10_dp.typ
+├── code/           # basic/、graph/、tree/、data_structure/、interval_greedy/
+│                   # math/、geometry/、poly/、string/、dp/
+└── test/           # 十章测试、随机对拍、独立编译及 PDF 调用验证
 ```
 
 三个目录保留初始化时的 `.gitkeep`。
+
+正式源码、章节、可重复运行的测试和维护脚本分别保存在 `code/`、`sections/`、`test/`、`scripts/`，应提交到 Git。根目录 `.cache/` 只存放下载字体、一次性迁移脚本及本地验收产物，整体忽略；正式构建与测试不得依赖其中的一次性脚本。生成的 PDF、校验文件、可执行文件和 Python 缓存不提交；测试用的预期输出文件不按扩展名笼统忽略。
+
+最新验收结论、编号变化原因、完整算法及待提交文件清单见 [final_acceptance_report.md](final_acceptance_report.md)；报告中的人工复核项仍需按实际赛题检查。
 
 ## 编译 Typst
 
@@ -71,7 +77,7 @@ typst compile main.typ ICPC-Notebook.pdf
 typst watch main.typ ICPC-Notebook.pdf
 ```
 
-`main.typ` 已启用基础工具、图论和树论，其他七章仍是注释导入占位。先创建相应章节文件，再取消对应 `#include` 行前的 `//`。章节路径和导入规则见 [Typst 官方文档](https://typst.app/docs/reference/scripting/#modules)。
+`main.typ` 已启用十章，显示章节号按 include 的实际顺序自动生成。章节内的二级算法标题按位置连续编号，原稿编号只保存在来源信息中。现有文件名前缀是稳定的维护地址，不绑定显示编号。章节路径和导入规则见 [Typst 官方文档](https://typst.app/docs/reference/scripting/#modules)。
 
 `ICPC-Notebook.pdf`、校验文件和字体缓存均不提交到 Git。CI 直接编译 `main.typ`，章节及所有排版以此入口为准；尚未启用的章节不会自动加入 PDF。
 
@@ -117,8 +123,33 @@ git push origin notebook-v1.0.0
 3. 在 `test/<topic>/` 下添加对应的 `<algorithm>_test.cpp`，覆盖常见输入和边界条件，并按需要对拍。
 4. 使用支持 C++17 的编译器验证模板，例如编译相关测试时使用 `g++ -std=c++17 -O2 -Wall -Wextra`，随后运行测试。
 5. 在 `sections/NN_topic.typ` 中添加算法说明和源码引用。代码引用路径相对于章节文件，指向 `../code/<topic>/<algorithm>.hpp` 或 `.cpp`，使用 `read` 配合 `raw` 展示源码。
-6. 若章节文件是新建的，在 `main.typ` 中启用对应导入；新增分类时按编号顺序补充导入。
+6. 使用 `== 算法名称 <algo-stable-id>` 在章节的期望位置插入算法；新建章节使用 `= 章节名称 <chapter-stable-id>`，在 `main.typ` 的期望位置导入。三级 / 四级标题用于无编号辅助说明，具体规则见下方。
 7. 编译 Notebook，检查 PDF 排版及 `git diff`、`git status`，确认 `raw/` 没有变化后再按需提交。
+
+## 自动编号与交叉引用
+
+在所需位置插入带稳定标签的标题，不写数字：
+
+```typst
+== 倍增 LCA <algo-tree-lca>
+
+=== 接口说明
+// 补充用途、复杂度、下标、调用、限制和现场记忆，并 read() 引用源码。
+```
+
+上例标签已存在；新增算法请选一个全局唯一的新标签。以后改标题、移动算法或调整章节顺序，保留该标签。引用使用 `@algo-tree-lca`；仅需编号时写 `#ref(<algo-tree-lca>, supplement: none)`。Typst 编译时同时更新正文、目录和引用，无需运行重新编号命令，也无需修改其他算法或 C++ 文件。
+
+一级标题是章节、二级标题是独立算法；三级 / 四级标题是无编号的接口、分类和组内变体。原稿中的无编号独立算法现也参与连续编号，原稿来源编号仅用于历史追溯。章节顺序由 `main.typ` 的 include 位置决定，文件名保持不变。删除被引用算法后，需要删除或修正对应引用；悬空引用会使构建失败。
+
+编号回归测试：
+
+```sh
+python test/typst/numbering_test.py
+# 可选的逐场景 PDF 检查需要安装 PyMuPDF：
+python test/typst/numbering_test.py --pdf-check
+```
+
+测试需要与正文相同的 Typst 和字体配置；可用 `TYPST` 环境变量指定编译器路径。所有插入、交换、删除、换章及文件改名仅在临时副本中执行，不改写当前项目。详细规则见 [TYPST_STYLE.md](TYPST_STYLE.md#自动编号与稳定引用)。
 
 ## 基础工具验证
 
@@ -153,3 +184,15 @@ python test/tree/run_tests.py
 脚本在 C++17 独立头文件模式和 GNU++17 个人基础模板模式下，检查全部模板、边界、多次初始化、换根和随机对拍；另编译运行 9 份 PDF 调用示例，并检查多翻译单元链接。使用断言、标准库边界检查及 `-ftrapv`，中间文件仅写入系统临时目录。
 
 本章保留递归 DFS，深链应评估栈空间；LCT 仍为迭代 Splay。点分治内部使用 GCC `__int128` 累加距离，避免 `ll` 边权累加溢出；其余权值运算的 `ll` 范围约束见对应模板说明。PDF 展示的模板已包含标准头文件及 `ll` 兜底宏，移除的只有维护用 `#pragma once`，无需引用仓库头文件。
+
+## 十章完整验证
+
+```sh
+python test/run_all.py
+```
+
+第 4～10 章也可分别运行 `python test/<topic>/run_tests.py`，topic 为 `data_structure`、`interval_greedy`、`math`、`geometry`、`poly`、`string`、`dp`。新测试检查独立 C++17 编译、个人基础模板宏兼容、多翻译单元链接、基础样例、边界及适用的随机对拍；`test/check_examples.py` 另编译运行 PDF 中展开依赖后的 140 份最小调用示例。`test/check_manifest.py` 核对原稿条目、文件对应关系、原始哈希及章节完整且不重复导入，允许调整导入顺序。
+
+需 GCC（支持 `bits/stdc++.h` 与 `__int128`）、Python 3，以及高精度模板使用的 Boost.Multiprecision 头文件。Boost 不在默认搜索路径时，Linux / macOS 可设置 `CPLUS_INCLUDE_PATH=/path/to/boost`，PowerShell 可设置 `$env:CPLUS_INCLUDE_PATH = 'D:/path/to/boost'`，该目录下应存在 `boost/multiprecision/cpp_int.hpp`。不必链接 Boost 二进制库。可通过 `CXX` 指定 GCC；测试产物放入临时目录，Python 缓存由 Git 忽略。
+
+各新章节的依赖直接在 PDF 中展开。组合多个模板时，共用实现只复制一次；同名 `Info`、`Tag`、`Seg`、`Node` 等独立版本按题选择，不要求它们能在同一作用域同时包含。莫队、数位 DP 等回调骨架仍需实现题意维护；WQS、分治 / Knuth 优化的数学条件以及浮点几何误差应按实际题目复核，测试通过不替代这些前提。

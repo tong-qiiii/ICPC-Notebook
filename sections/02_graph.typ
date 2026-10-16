@@ -1,4 +1,4 @@
-= 图论
+= 图论 <chapter-graph>
 
 本章迁移 `raw/02_graph.md` 的全部 34 个小节，共拆分为 37 份独立模板。
 保留原算法思路，普通图使用简单邻接表；需要分量、历史、残量或辅助节点状态时才保留轻量 `struct`。
@@ -24,7 +24,7 @@
 }
 
 
-== 强连通分量 SCC - Tarjan + 缩点
+== 强连通分量 SCC - Tarjan + 缩点 <algo-graph-scc>
 
 *来源：* 原文 2.1。
 *用途：* 求有向图强连通分量，并可缩点得到 DAG。
@@ -75,7 +75,7 @@ auto dag = scc.dag();
 #graph_code("scc.hpp")
 
 
-== 割点 / 桥
+== 割点 / 桥 <algo-graph-cut-bridge>
 
 *来源：* 原文 2.2。
 *用途：* 求无向图所有割点和桥。
@@ -123,7 +123,7 @@ cout << int(cb.is_cut[2]) << " " << cb.bridges.size() << endl;
 #graph_code("cut_bridge.hpp")
 
 
-== 边双连通分量 EBCC
+== 边双连通分量 EBCC <algo-graph-ebcc>
 
 *来源：* 原文 2.3。
 *用途：* 求无向图边双连通分量，并可缩点得到桥树 / 桥森林。
@@ -175,7 +175,7 @@ cout << ebcc.cnt << endl;
 #graph_code("ebcc.hpp")
 
 
-== 点双连通分量 VBCC / 圆方树
+== 点双连通分量 VBCC / 圆方树 <algo-graph-vbcc>
 
 *来源：* 原文 2.4。
 *用途：* 求无向图点双连通分量和割点，并建立圆方树。
@@ -226,7 +226,7 @@ low[v] \>= dfn[u] 时弹点栈到 v，并额外加入 u；u 留在栈中参与�
 #graph_code("vbcc.hpp")
 
 
-== 2-SAT
+== 2-SAT <algo-graph-two-sat>
 
 *来源：* 原文 2.5。
 *用途：* 判断只含二元布尔约束的系统是否可满足，并构造一组可行赋值。
@@ -276,7 +276,7 @@ if (sat.satisfiable()) cout << sat.assignment[2] << endl;
 #graph_code("two_sat.hpp")
 
 
-== 链式前向星 Vector 版
+== 链式前向星 Vector 版 <algo-graph-forward-star>
 
 *来源：* 原文 2.6。
 *用途：* 用连续边数组维护邻接表，适合需要直接操作边编号或反向边的图算法。
@@ -329,7 +329,7 @@ head 初值 -1；新边插到链表头；遍历 i = e[i].nxt，顺序与 add 相
 #graph_code("forward_star.hpp")
 
 
-== Dijkstra 最短路
+== Dijkstra 最短路 <algo-graph-dijkstra>
 
 *来源：* 原文 2.7。
 *用途：* 求非负权图中单源最短路。
@@ -375,7 +375,7 @@ cout << dis[2] << endl;
 #graph_code("dijkstra.hpp")
 
 
-== SPFA 判负环
+== SPFA 判负环 <algo-graph-negative-cycle>
 
 *来源：* 原文 2.8。
 *用途：* 判断整张有向图中是否存在负权环。
@@ -419,7 +419,7 @@ cout << neg_cycle(g) << endl;
 #graph_code("negative_cycle.hpp")
 
 
-== Floyd 全源最短路
+== Floyd 全源最短路 <algo-graph-floyd>
 
 *来源：* 原文 2.9。
 *用途：* 小规模有向或无向图的全源最短路。
@@ -466,7 +466,7 @@ k 放最外层，两段都是有限值才能相加。零对角、重边取 min�
 #graph_code("floyd.hpp")
 
 
-== bitset 传递闭包
+== bitset 传递闭包 <algo-graph-transitive-closure>
 
 *来源：* 原文 2.9。
 *用途：* 以 bitset 批量求有向图传递闭包。
@@ -511,7 +511,7 @@ reach[i][k] 成立就 reach[i] |= reach[k]；中转点 k 最外层。
 #graph_code("transitive_closure.hpp")
 
 
-== 差分约束
+== 差分约束 <algo-graph-difference-constraints>
 
 *来源：* 原文 2.10。
 *用途：* 判断一组形如 `x_v - x_u <= w` 的差分约束是否有解，并构造一组可行解。
@@ -557,7 +557,7 @@ x\_v-x\_u \<= w 连 u-\>v(w)；\>= w 反向连 -w。负环就是矛盾，dis 是
 #graph_code("difference_constraints.hpp")
 
 
-== Kruskal 最小生成树
+== Kruskal 最小生成树 <algo-graph-kruskal>
 
 *来源：* 原文 2.11。
 *用途：* 求无向带权图的最小生成树。
@@ -602,7 +602,7 @@ if (ok) cout << ans << endl;
 #graph_code("kruskal.hpp", deps: ("dsu.hpp",))
 
 
-== Prim 最小生成树
+== Prim 最小生成树 <algo-graph-prim>
 
 *来源：* 原文 2.12。
 *用途：* 用邻接表求无向带权图的最小生成树，适合直接从图上跑 MST。
@@ -651,7 +651,7 @@ best[v] 是树连到 v 的最小边权，不是最短路距离。每次选尚未
 #graph_code("prim.hpp")
 
 
-== 并查集 DSU
+== 并查集 DSU <algo-graph-dsu>
 
 *来源：* 原文 2.13。
 *用途：* 维护集合合并、连通性和集合大小。
@@ -699,7 +699,7 @@ cout << dsu.same(1, 2) << " " << dsu.size(1) << endl;
 #graph_code("dsu.hpp")
 
 
-== 可撤销并查集 Rollback DSU
+== 可撤销并查集 Rollback DSU <algo-graph-rollback-dsu>
 
 *来源：* 原文 2.14。
 *用途：* 支持撤销集合合并，常用于线段树分治、离线动态连通性。
@@ -750,7 +750,7 @@ cout << dsu.same(1, 2) << endl;
 #graph_code("rollback_dsu.hpp")
 
 
-== 可持久化并查集 Persistent DSU
+== 可持久化并查集 Persistent DSU <algo-graph-persistent-dsu>
 
 *来源：* 原文 2.15。
 *用途：* 保留并查集的所有历史版本，可从任意旧版本继续合并或查询。
@@ -799,7 +799,7 @@ cout << dsu.same(r1, 1, 2) << " " << dsu.same(r2, 1, 2) << endl;
 #graph_code("persistent_dsu.hpp")
 
 
-== 加法差分带权并查集
+== 加法差分带权并查集 <algo-graph-weighted-dsu>
 
 *来源：* 原文 2.16。
 *用途：* 维护加法差值约束并检测矛盾。
@@ -845,7 +845,7 @@ if (dsu.same(1, 3)) cout << dsu.diff(1, 3) << endl;
 #graph_code("weighted_dsu.hpp")
 
 
-== XOR / 奇偶带权并查集
+== XOR / 奇偶带权并查集 <algo-graph-xor-dsu>
 
 *来源：* 原文 2.16。
 *用途：* 维护 XOR 或奇偶关系，检测矛盾。
@@ -889,7 +889,7 @@ cout << dsu.diff(1, 3) << endl;
 #graph_code("xor_dsu.hpp")
 
 
-== 模 k 带权并查集
+== 模 k 带权并查集 <algo-graph-mod-dsu>
 
 *来源：* 原文 2.16。
 *用途：* 维护模 k 的相对关系，例如食物链关系。
@@ -934,7 +934,7 @@ cout << dsu.diff(1, 3) << endl;
 #graph_code("mod_dsu.hpp")
 
 
-== 拓展域并查集
+== 拓展域并查集 <algo-graph-extended-domain-dsu>
 
 *来源：* 原文 2.17。
 *用途：* 把“同类 / 异类”等有限分类关系拆成多个并查集节点，用普通 DSU 维护关系与矛盾。
@@ -979,7 +979,7 @@ cout << merge_domain(dsu, 3, 1, 3, true) << endl;
 #graph_code("extended_domain_dsu.hpp", deps: ("dsu.hpp",))
 
 
-== 并查集虚点 / 参考点
+== 并查集虚点 / 参考点 <algo-graph-dsu-reference>
 
 *来源：* 原文 2.18。
 *用途：* 把 `val[x]=w` 这类绝对值约束转成并查集维护的相对关系约束。
@@ -1026,7 +1026,7 @@ if (val) cout << *val << endl;
 #graph_code("dsu_reference.hpp", deps: ("weighted_dsu.hpp",))
 
 
-== 拓扑排序
+== 拓扑排序 <algo-graph-topological-sort>
 
 *来源：* 原文 2.19。
 *用途：* 求有向图的一个拓扑序，并判断是否存在有向环。
@@ -1074,7 +1074,7 @@ if (order.size() == g.size() - 1)
 #graph_code("topological_sort.hpp")
 
 
-== 欧拉路径 / 欧拉回路：有向图
+== 欧拉路径 / 欧拉回路：有向图 <algo-graph-euler-directed>
 
 *来源：* 原文 2.20。
 *用途：* 求经过每条有向边恰好一次的欧拉路径 / 欧拉回路。
@@ -1120,7 +1120,7 @@ for (int u : path) cout << u << " ";
 #graph_code("euler_directed.hpp")
 
 
-== 欧拉路径 / 欧拉回路：无向图
+== 欧拉路径 / 欧拉回路：无向图 <algo-graph-euler-undirected>
 
 *来源：* 原文 2.21。
 *用途：* 求经过每条无向边恰好一次的欧拉路径 / 欧拉回路。
@@ -1166,7 +1166,7 @@ for (int u : path) cout << u << " ";
 #graph_code("euler_undirected.hpp")
 
 
-== 线段树优化建图
+== 线段树优化建图 <algo-graph-segment-graph>
 
 *来源：* 原文 2.22。
 *用途：* 大量维护点到区间、区间到点、区间到区间的有向边，常配合最短路 / 可达性。
@@ -1215,7 +1215,7 @@ out 由区间向原点，in 由原点向区间。点到区间接 out，区间到
 #graph_code("segment_graph.hpp")
 
 
-== 倍增优化树上路径建图
+== 倍增优化树上路径建图 <algo-graph-jump-graph>
 
 *来源：* 原文 2.23。
 *用途：* 大量维护“点到树上路径”或“树上路径到点”的依赖边，常配合拓扑排序 / 可达性。
@@ -1271,7 +1271,7 @@ for (int u : order) cout << u << " ";
 #graph_code("jump_graph.hpp")
 
 
-== 最大流 - Dinic
+== 最大流 - Dinic <algo-graph-dinic>
 
 *来源：* 原文 2.24。
 *用途：* 求有向网络最大流，并可在最大流后取得对应最小割的源点侧。
@@ -1321,7 +1321,7 @@ BFS 走 cap\>0 分层，DFS 只走下一层并用当前弧。正减反加；割�
 #graph_code("dinic.hpp")
 
 
-== 最小费用最大流 - SPFA
+== 最小费用最大流 - SPFA <algo-graph-min-cost-flow-spfa>
 
 *来源：* 原文 2.25。
 *用途：* 求最大流及其最小费用；实现短，适合规模较小或费用图不大的题。
@@ -1368,7 +1368,7 @@ cout << sent << " " << cost << endl;
 #graph_code("min_cost_flow_spfa.hpp")
 
 
-== 最小费用最大流 - 势能 Dijkstra / Johnson
+== 最小费用最大流 - 势能 Dijkstra / Johnson <algo-graph-min-cost-flow-potential>
 
 *来源：* 原文 2.26。
 *用途：* 用势能重标号把残量边费用变为非负，再用 Dijkstra 求最短增广路；适合较大的最小费用流。
@@ -1416,7 +1416,7 @@ cout << sent << " " << cost << endl;
 #graph_code("min_cost_flow_potential.hpp")
 
 
-== 最小割树 - Gomory-Hu
+== 最小割树 - Gomory-Hu <algo-graph-gomory-hu>
 
 *来源：* 原文 2.27。
 *用途：* 用一棵树表示无向图任意两点之间的最小割；树上 `s-t` 路径最小边权就是原图 `s-t` 最小割。
@@ -1467,7 +1467,7 @@ cout << gh.query(1, 3) << endl;
 #graph_code("gomory_hu.hpp", deps: ("dinic.hpp",))
 
 
-== 全局最小割 - Stoer-Wagner
+== 全局最小割 - Stoer-Wagner <algo-graph-stoer-wagner>
 
 *来源：* 原文 2.28。
 *用途：* 求无向带权图所有非平凡割中的最小割权值，不需要指定源点和汇点。
@@ -1512,7 +1512,7 @@ cout << stoer_wagner(g) << endl;
 #graph_code("stoer_wagner.hpp")
 
 
-== 0-1 BFS
+== 0-1 BFS <algo-graph-zero-one-bfs>
 
 *来源：* 原文 2.29。
 *用途：* 求边权只有 `0/1` 的图上单源最短路。
@@ -1558,7 +1558,7 @@ cout << dis[2] << endl;
 #graph_code("zero_one_bfs.hpp")
 
 
-== 二分图最大匹配 Hopcroft-Karp
+== 二分图最大匹配 Hopcroft-Karp <algo-graph-hopcroft-karp>
 
 *来源：* 原文 2.30。
 *用途：* 求二分图最大匹配，比普通增广路适合较大的稀疏二分图。
@@ -1606,7 +1606,7 @@ cout << hk.matchL[1] << endl;
 #graph_code("hopcroft_karp.hpp")
 
 
-== KM / Hungarian Assignment
+== KM / Hungarian Assignment <algo-graph-hungarian>
 
 *来源：* 原文 2.31。
 *用途：* 解决带权二分图 Assignment Problem；代码求每个左点恰好匹配一个不同右点的最小总代价。
@@ -1651,7 +1651,7 @@ cout << ans << " " << match[0] << endl;
 #graph_code("hungarian.hpp")
 
 
-== 上下界可行流
+== 上下界可行流 <algo-graph-lower-bound-flow>
 
 *来源：* 原文 2.32。
 *用途：* 判断每条边流量限制为 `[low, high]` 时，是否存在满足流量守恒的可行流，并恢复各边流量。
@@ -1698,7 +1698,7 @@ if (flow.work()) cout << flow.edgeFlow(id) << endl;
 #graph_code("lower_bound_flow.hpp", deps: ("dinic.hpp",))
 
 
-== 上下界最大流
+== 上下界最大流 <algo-graph-lower-bound-max-flow>
 
 *来源：* 原文 2.33。
 *用途：* 在每条边具有流量上下界时，求 `s -> t` 的最大可行流。
@@ -1744,7 +1744,7 @@ cout << flow.work(1, 2) << endl;
 #graph_code("lower_bound_max_flow.hpp", deps: ("dinic.hpp",))
 
 
-== 最大权闭合子图
+== 最大权闭合子图 <algo-graph-max-weight-closure>
 
 *来源：* 原文 2.34。
 *用途：* 选择若干点最大化权值和，同时满足依赖关系 `选 u => 必须选 v`。

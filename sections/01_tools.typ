@@ -1,11 +1,11 @@
-= 基础工具
+= 基础工具 <chapter-tools>
 
 本章对应原始备份 `raw/01_tools.md`，源码维护在 `code/basic/`。
 使用 GNU++17；头文件可独立包含，也可将需要的实现复制到比赛代码。
 下列调用片段默认已包含对应头文件，并位于 `main` 或其他函数中。
 原始备份不参与编译，也不随模板修正而修改。
 
-== GCD
+== GCD <algo-basic-gcd>
 
 *用途：* 求最大公约数，用于约分与互质判断。
 *形式：* 函数式，直接使用 `std::gcd`，不需要 `struct` 或自写欧几里得封装。
@@ -33,7 +33,7 @@ auto large_g = std::gcd(1ULL << 63, 6ULL);  // 2
 
 #raw(read("../code/basic/gcd.hpp"), lang: "cpp", block: true)
 
-== 位运算枚举
+== 位运算枚举 <algo-basic-bit-enumeration>
 
 *用途：* 枚举所有状态、置位位置、单集合子集以及所有集合与子集对。
 *形式：* 函数式，通过回调直接处理状态；没有需要长期保存的数据，不使用 `struct`。
@@ -76,7 +76,7 @@ for_each_mask_submask(3, [&](std::uint64_t mask, std::uint64_t sub) {
 
 #raw(read("../code/basic/bit_enumeration.hpp"), lang: "cpp", block: true)
 
-== 快读
+== 快读 <algo-basic-fast-io>
 
 *用途：* 使用 `fread` 缓冲读取整数和不含空白的字符串。
 *形式：* `struct FastIO`，需要维护文件、缓冲区及游标；不适合无状态函数式封装。
@@ -114,7 +114,7 @@ if (!io.read(x) || !io.read(s)) return 0;
 
 #raw(read("../code/basic/fast_io.hpp"), lang: "cpp", block: true)
 
-== 取模类 Mint
+== 取模类 Mint <algo-basic-mint>
 
 *用途：* 模意义的加减乘、幂、逆元和除法。
 *形式：* `struct Mint<MOD>`，统一维护归一化值与运算；裸函数容易混入不同模数或忘记归一化。
@@ -148,7 +148,7 @@ std::cout << x.v << '\n';
 
 #raw(read("../code/basic/mint.hpp"), lang: "cpp", block: true)
 
-== STL 二分
+== STL 二分 <algo-basic-binary-search>
 
 *用途：* 在升序数组中找第一个大于等于、大于某值的位置，以及最后一个小于、小于等于某值的位置。
 *形式：* 函数式，使用 STL 二分并返回下标；不维护索引或状态，不使用 `struct`。
@@ -183,7 +183,7 @@ if (p < int(a.size())) std::cout << a[p] << '\n';
 
 #raw(read("../code/basic/binary_search.hpp"), lang: "cpp", block: true)
 
-== 对拍
+== 对拍 <algo-basic-stress>
 
 *用途：* 生成数据，依次运行正解与暴力，比较输出并保留反例；属于本地工具，不随题目提交。
 *形式：* 函数式，三个命令及轮数作为参数；不为简单顺序流程增加配置 `struct`。
@@ -216,7 +216,7 @@ stress("./gen", "./sol", "./brute", 1000);
 
 #raw(read("../code/basic/stress.hpp"), lang: "cpp", block: true)
 
-== 128 位整数输入输出
+== 128 位整数输入输出 <algo-basic-int128-io>
 
 *用途：* 通过 `cin` / `cout` 读写有符号 `__int128`，容纳超过 `long long` 的中间结果。
 *形式：* 函数式流运算符重载，不维护额外状态，不使用 `struct` 包裹整数。
@@ -251,7 +251,7 @@ std::cout << x << '\n';
 
 #raw(read("../code/basic/int128_io.hpp"), lang: "cpp", block: true)
 
-== 随机数 RNG
+== 随机数 RNG <algo-basic-rng>
 
 *用途：* 生成随机整数、打乱数组、为随机算法和对拍提供随机源。
 *形式：* 函数式 `rnd` 配合标准库引擎 `rng`；引擎本身保存状态，无需另建自定义 `struct`。
@@ -283,7 +283,7 @@ rng.seed(123456);  // 调试复现时使用固定种子
 
 #raw(read("../code/basic/rng.hpp"), lang: "cpp", block: true)
 
-== Custom Hash / 防 Hack
+== Custom Hash / 防 Hack <algo-basic-custom-hash>
 
 *用途：* 降低整数与 pair 键的无序容器被预先构造冲突数据拖慢的风险。
 *形式：* `struct CustomHash`，标准库容器要求可调用哈希类型，适合轻量函数对象。
@@ -319,7 +319,7 @@ pair_map[{1, 2}] = 3;
 
 #raw(read("../code/basic/custom_hash.hpp"), lang: "cpp", block: true)
 
-== Debug 宏
+== Debug 宏 <algo-basic-debug>
 
 *用途：* 本地输出变量、pair 和常用容器；提交模式删除调试调用。
 *形式：* 宏配合重载函数，打印由类型决定；不需要保存状态，不使用 `struct`。

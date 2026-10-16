@@ -1,6 +1,7 @@
-= 树论
+= 树论 <chapter-tree>
 
-本章完整迁移 `raw/03_tree.md` 的 3.1-3.9，共 9 项，编号与原顺序一致。
+本章完整迁移 `raw/03_tree.md` 的 9 项算法，显示编号由当前位置自动生成。
+普通最小生成树参见 #ref(<algo-graph-kruskal>, supplement: [算法])，重构树保留在本章。
 均保留轻量 struct：它们需要跨多次查询或递归维护关联状态，不额外添加 getter / setter、通用图类或嵌套封装。
 节点默认 `1..n`，`0` 为哨兵；询问编号、重构树辅助节点等例外在各节注明。n 非负，n+1 及数组长度须能由 int 表示并满足内存限制。标准头文件及 ll 兜底宏随源码展示，复制个人基础模板和所需实现即可使用，不依赖仓库头文件。
 
@@ -13,7 +14,7 @@
 }
 
 
-== 倍增 LCA
+== 倍增 LCA <algo-tree-lca>
 
 *来源：* 原文 3.1。
 
@@ -72,7 +73,7 @@ assert(lca.kth_up(2, 2) == 0);
 #tree_code("lca.hpp")
 
 
-== 树剖 LCA
+== 树剖 LCA <algo-tree-lca-hld>
 
 *来源：* 原文 3.2。
 
@@ -128,7 +129,7 @@ build 每次先清空 son，支持在同一棵树上换根重算；init 清空�
 #tree_code("lca_hld.hpp")
 
 
-== Tarjan 离线 LCA
+== Tarjan 离线 LCA <algo-tree-lca-tarjan>
 
 *来源：* 原文 3.3。
 
@@ -187,7 +188,7 @@ DFS 完一个儿子后：
 #tree_code("lca_tarjan.hpp")
 
 
-== 重链剖分 HLD
+== 重链剖分 HLD <algo-tree-hld>
 
 *来源：* 原文 3.4。
 
@@ -283,7 +284,7 @@ path() 不保证 u -> v 顺序；非交换合并要单独处理方向。
 #tree_code("hld.hpp")
 
 
-== 虚树
+== 虚树 <algo-tree-virtual-tree>
 
 *来源：* 原文 3.5。
 
@@ -359,7 +360,7 @@ prep 可重复换根，并清掉旧虚树；原树改变后必须重新 prep。b
 #tree_code("virtual_tree.hpp")
 
 
-== 启发式合并 / DSU on Tree：子树不同颜色数
+== 启发式合并 / DSU on Tree：子树不同颜色数 <algo-tree-dsu-on-tree>
 
 *来源：* 原文 3.6。
 
@@ -419,7 +420,7 @@ assert(dsu.work(1)[1] == 1);
 #tree_code("dsu_on_tree.hpp")
 
 
-== 点分治：统计距离不超过 k 的点对数
+== 点分治：统计距离不超过 k 的点对数 <algo-tree-centroid>
 
 *来源：* 原文 3.7。
 
@@ -475,7 +476,7 @@ assert(cd.work() == 3);
 #tree_code("centroid.hpp")
 
 
-== Kruskal 重构树
+== Kruskal 重构树 <algo-tree-kruskal-tree>
 
 *来源：* 原文 3.8。
 
@@ -540,7 +541,7 @@ Kruskal 从小到大合并两个连通块根 `fu, fv`，新建点 `p`，`val[p] 
 #tree_code("kruskal_tree.hpp")
 
 
-== LCT：动态森林 / 路径加 / 路径和
+== LCT：动态森林 / 路径加 / 路径和 <algo-tree-link-cut-tree>
 
 *来源：* 原文 3.9。
 
