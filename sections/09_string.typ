@@ -4,12 +4,14 @@
 
 #text("统一约定：输入规模、节点号、版本号和查询区间须合法；空区间仅在接口明确支持时使用。递归实现需评估栈空间；整数中间值及累计值必须在对应类型范围内。多测重新调用 init / build / clear，普通函数的外部维护状态由调用者清空。各模板独立选用，同名 Info / Tag / Seg / Query 不应同时粘贴。")
 
-#let source_code(files) = {
-  let source = files.map(file => read("../code/" + file)
-    .replace(regex("(?m)^#pragma once\r?\n"), "")
-    .replace(regex("(?m)^#include \".*\"\r?\n"), "")).join("\n")
-  raw(source, lang: "cpp", block: true)
-}
+#import "../styles/source.typ": source_code
+
+
+=== 公共代码与复制顺序
+
+本章源码块仅展示算法自身实现；公共骨架只打印一次。按依赖链接复制所需的公共代码，再复制本算法与调用示例，比赛时不需要仓库头文件。已有基础算法被复用时，直接复制其原条目，不在每个代码块里重贴。
+
+*依赖索引：* #ref(<algo-string-suffix-array>, supplement: none)。
 
 == #text("KMP / Prefix Function") <algo-string-kmp>
 
@@ -602,7 +604,9 @@ assert(l.query(1, 3) == 3 && l.query(0, 0) == 6);
 
 === 模板引用
 
-#source_code(("string/suffix_array.hpp","string/lcp_rmq.hpp",))
+*代码依赖：* 先复制 #ref(<algo-string-suffix-array>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("string/lcp_rmq.hpp",))
 
 
 == #text("Duval：Lyndon 分解") <algo-string-duval>

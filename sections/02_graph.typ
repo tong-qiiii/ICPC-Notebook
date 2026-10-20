@@ -5,7 +5,7 @@
 节点默认 `1..n`，下标 `0` 保留；边号、残量边下标、返回序列位置和匈牙利输入矩阵的例外另行标明。
 
 *比赛复制：* 先复制下面的个人基础模板，再复制所需算法实现。源码中的标准头文件与 `ll` 兜底宏用于独立维护和测试，可保留。
-需要 DSU / Dinic 的模板已将依赖完整展开；PDF 中不出现仓库头文件导入。组合多份模板时，共用的 DSU / Dinic 只复制一份。
+DSU / Dinic 在章首集中展示，使用它们的算法只给依赖链接和自身实现；PDF 中不出现仓库头文件导入。组合多份模板时，共用骨架只复制一次。
 两版费用流分别名为 `MCMF` 与 `MCMFPotential`，避免类型冲突。
 
 *统一检查：* 输入端点和区间必须合法；换图或多测按照各模板的初始化约定清空状态。
@@ -16,13 +16,28 @@
 #let personal_base = read("../STYLE.md").replace("\r\n", "\n").split("```cpp\n").at(1).split("\n```").at(0)
 #raw(personal_base, lang: "cpp", block: true)
 
-#let graph_code(file, deps: ()) = {
-  let source = deps.map(dep => read("../code/graph/" + dep)).join("\n") + "\n" + read("../code/graph/" + file)
-  source = source.replace(regex("(?m)^#pragma once\r?\n"), "")
-  source = source.replace(regex("(?m)^#include \"[^\"]+\"\r?\n"), "")
-  raw(source, lang: "cpp", block: true)
-}
+#import "../styles/source.typ": source_code
+#let graph_code(file, shared: none) = source_code(("graph/" + file,), shared: shared)
 
+
+
+=== 公共代码与复制顺序
+
+本章源码块仅展示算法自身实现；公共骨架只打印一次。按依赖链接复制所需的公共代码，再复制本算法与调用示例，比赛时不需要仓库头文件。已有基础算法被复用时，直接复制其原条目，不在每个代码块里重贴。
+
+*依赖索引：* #link(<shared-graph-dsu>)[DSU 并查集骨架]、#ref(<algo-graph-weighted-dsu>, supplement: none)、#link(<shared-graph-dinic>)[Dinic 网络流骨架]。
+
+=== 公共骨架：DSU 并查集骨架 <shared-graph-dsu>
+
+完整代码只在此处展示一次；用途、接口和调用仍见 #ref(<algo-graph-dsu>, supplement: none)。
+
+#source_code(("graph/dsu.hpp",))
+
+=== 公共骨架：Dinic 网络流骨架 <shared-graph-dinic>
+
+完整代码只在此处展示一次；用途、接口和调用仍见 #ref(<algo-graph-dinic>, supplement: none)。
+
+#source_code(("graph/dinic.hpp",))
 
 == 强连通分量 SCC - Tarjan + 缩点 <algo-graph-scc>
 
@@ -599,7 +614,9 @@ if (ok) cout << ans << endl;
 
 === 模板引用
 
-#graph_code("kruskal.hpp", deps: ("dsu.hpp",))
+*代码依赖：* 先复制 #link(<shared-graph-dsu>)[DSU 并查集骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#graph_code("kruskal.hpp")
 
 
 == Prim 最小生成树 <algo-graph-prim>
@@ -696,7 +713,7 @@ cout << dsu.same(1, 2) << " " << dsu.size(1) << endl;
 
 === 模板引用
 
-#graph_code("dsu.hpp")
+#graph_code("dsu.hpp", shared: <shared-graph-dsu>)
 
 
 == 可撤销并查集 Rollback DSU <algo-graph-rollback-dsu>
@@ -749,6 +766,37 @@ cout << dsu.same(1, 2) << endl;
 
 #graph_code("rollback_dsu.hpp")
 
+
+== 离线动态连通：线段树分治 <algo-graph-dynamic-connectivity>
+
+*用途：* 无向图离线加边、删边和询问两点是否连通；复用前文可撤销并查集。
+
+*复杂度：* q 个操作，时间 `O(q log q log n)`，空间 `O(n + q log q)`；map 建立生效区间额外 `O(q log q)`。时间树递归深度 `O(log q)`。
+
+*下标与接口：* 节点 `1..n`；`DynCon d(n)`，`add(type,u,v)` 依次记录操作，type 为 `1/-1/0` 对应加边、删去一份边、查询。`work()` 按查询顺序返回 0/1；可重复调用。重边计数大于 0 时保持连通贡献，自环可正常处理。
+
+*注意事项：* 仅允许删除当前存在的边；无向端点自动排序。新数据重新构造对象，或在节点数相同时清空 `op`。这个模板只查询连通性，不维护二分图染色或带权约束。
+
+*现场记忆：* 边的一段生效时间挂到时间线段树，进入节点合并，离开节点回滚到快照；可撤销并查集不能路径压缩。
+
+=== 最小调用示例
+
+```cpp
+DynCon d(3);
+d.add(1, 1, 2);
+d.add(1, 1, 2);
+d.add(-1, 2, 1);
+d.add(0, 1, 2);
+d.add(-1, 1, 2);
+d.add(0, 1, 2);
+assert(d.work() == vector<int>({1, 0}));
+```
+
+=== 模板引用
+
+*代码依赖：* #ref(<algo-graph-rollback-dsu>, supplement: none)。先复制可撤销并查集。
+
+#source_code(("graph/dynamic_connectivity.hpp",))
 
 == 可持久化并查集 Persistent DSU <algo-graph-persistent-dsu>
 
@@ -976,7 +1024,9 @@ cout << merge_domain(dsu, 3, 1, 3, true) << endl;
 
 === 模板引用
 
-#graph_code("extended_domain_dsu.hpp", deps: ("dsu.hpp",))
+*代码依赖：* 先复制 #link(<shared-graph-dsu>)[DSU 并查集骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#graph_code("extended_domain_dsu.hpp")
 
 
 == 并查集虚点 / 参考点 <algo-graph-dsu-reference>
@@ -1023,7 +1073,9 @@ if (val) cout << *val << endl;
 
 === 模板引用
 
-#graph_code("dsu_reference.hpp", deps: ("weighted_dsu.hpp",))
+*代码依赖：* 先复制 #ref(<algo-graph-weighted-dsu>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#graph_code("dsu_reference.hpp")
 
 
 == 拓扑排序 <algo-graph-topological-sort>
@@ -1318,7 +1370,7 @@ BFS 走 cap\>0 分层，DFS 只走下一层并用当前弧。正减反加；割�
 
 === 模板引用
 
-#graph_code("dinic.hpp")
+#graph_code("dinic.hpp", shared: <shared-graph-dinic>)
 
 
 == 最小费用最大流 - SPFA <algo-graph-min-cost-flow-spfa>
@@ -1464,7 +1516,9 @@ cout << gh.query(1, 3) << endl;
 
 === 模板引用
 
-#graph_code("gomory_hu.hpp", deps: ("dinic.hpp",))
+*代码依赖：* 先复制 #link(<shared-graph-dinic>)[Dinic 网络流骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#graph_code("gomory_hu.hpp")
 
 
 == 全局最小割 - Stoer-Wagner <algo-graph-stoer-wagner>
@@ -1579,6 +1633,12 @@ cout << dis[2] << endl;
 - `matchR[v]`：右部 `v` 匹配的左点
 
 
+=== 最小点覆盖与最大独立集恢复
+
+先 `work()` 求最大匹配，再 `cover()` 返回 `{左部所选点,右部所选点}`，时间空间 `O(V+E)` / `O(V)`。从所有未匹配左点出发，沿“左→右非匹配边、右→左匹配边”走交错路；设可达点为 Z，则最小点覆盖为左部非 Z 加右部 Z，其在两侧全集的补集是最大独立集。
+
+仅适用于二分图；匹配必须已经最大。`cover` 不改匹配，可重复调用；加边后须重新 work。两侧节点编号分开，不能把同一个数字当同一顶点。覆盖大小等于匹配数，最大独立集大小为 `nL+nR-匹配数`，这里是按点数计，非带权版本。
+
 === 调用方式
 
 ```cpp
@@ -1586,6 +1646,14 @@ HopcroftKarp hk(2, 2);
 hk.add(1, 1); hk.add(1, 2); hk.add(2, 1);
 cout << hk.work() << endl;
 cout << hk.matchL[1] << endl;
+auto [cl, cr] = hk.cover();
+assert(cl.size() + cr.size() == 2);
+vector<int> il, ir;
+for (int u = 1; u <= hk.nL; u++)
+    if (!binary_search(cl.begin(), cl.end(), u)) il.push_back(u);
+for (int v = 1; v <= hk.nR; v++)
+    if (!binary_search(cr.begin(), cr.end(), v)) ir.push_back(v);
+assert(il.size() + ir.size() == 2);
 ```
 
 
@@ -1695,7 +1763,9 @@ if (flow.work()) cout << flow.edgeFlow(id) << endl;
 
 === 模板引用
 
-#graph_code("lower_bound_flow.hpp", deps: ("dinic.hpp",))
+*代码依赖：* 先复制 #link(<shared-graph-dinic>)[Dinic 网络流骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#graph_code("lower_bound_flow.hpp")
 
 
 == 上下界最大流 <algo-graph-lower-bound-max-flow>
@@ -1741,7 +1811,9 @@ cout << flow.work(1, 2) << endl;
 
 === 模板引用
 
-#graph_code("lower_bound_max_flow.hpp", deps: ("dinic.hpp",))
+*代码依赖：* 先复制 #link(<shared-graph-dinic>)[Dinic 网络流骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#graph_code("lower_bound_max_flow.hpp")
 
 
 == 最大权闭合子图 <algo-graph-max-weight-closure>
@@ -1790,4 +1862,6 @@ cout << ans << endl;
 
 === 模板引用
 
-#graph_code("max_weight_closure.hpp", deps: ("dinic.hpp",))
+*代码依赖：* 先复制 #link(<shared-graph-dinic>)[Dinic 网络流骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#graph_code("max_weight_closure.hpp")

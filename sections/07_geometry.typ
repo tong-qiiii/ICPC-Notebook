@@ -4,12 +4,7 @@
 
 #text("统一约定：输入规模、节点号、版本号和查询区间须合法；空区间仅在接口明确支持时使用。递归实现需评估栈空间；整数中间值及累计值必须在对应类型范围内。多测重新调用 init / build / clear，普通函数的外部维护状态由调用者清空。各模板独立选用，同名 Info / Tag / Seg / Query 不应同时粘贴。")
 
-#let source_code(files) = {
-  let source = files.map(file => read("../code/" + file)
-    .replace(regex("(?m)^#pragma once\r?\n"), "")
-    .replace(regex("(?m)^#include \".*\"\r?\n"), "")).join("\n")
-  raw(source, lang: "cpp", block: true)
-}
+#import "../styles/source.typ": source_code
 
 === #text("H1：二维计算几何底层")
 
@@ -24,6 +19,19 @@
 
 #raw("SegmentRelation:\nDISJOINT  无交\nTOUCH     唯一交点，且至少一条线段在端点处相交\nPROPER    两线段内部严格相交\nOVERLAP   共线且交集有正长度\n\nPointInPolygon:\nOUT / ON / IN",block:true)
 
+
+
+=== 公共代码与复制顺序
+
+本章源码块仅展示算法自身实现；公共骨架只打印一次。按依赖链接复制所需的公共代码，再复制本算法与调用示例，比赛时不需要仓库头文件。已有基础算法被复用时，直接复制其原条目，不在每个代码块里重贴。
+
+*依赖索引：* #link(<shared-geometry-base>)[二维点与向量骨架]、#ref(<algo-geometry-line-segment>, supplement: none)、#ref(<algo-geometry-polygon>, supplement: none)、#ref(<algo-geometry-convex-hull>, supplement: none)、#ref(<algo-geometry-triangle>, supplement: none)、#ref(<algo-geometry-circle>, supplement: none)。
+
+=== 公共骨架：二维点与向量骨架 <shared-geometry-base>
+
+完整代码只在此处展示一次；用途、接口和调用仍见 #ref(<algo-geometry-geometry-base>, supplement: none)。
+
+#source_code(("geometry/geometry_base.hpp",))
 
 == #text("二维几何基础") <algo-geometry-geometry-base>
 
@@ -52,7 +60,7 @@ table.header([#text("接口")],[#text("含义")]),
 [#raw("rotate(a, rad)")],[#text("逆时针旋转")],
 [#raw("angle(a, b)")],[#text("两非零向量夹角 ")#raw("[0, π]")],
 [#raw("orient(a,b,c)")],[#raw("+1 / 0 / -1 = CCW / 共线 / CW")],
-[#raw("same_point(a,b)")],[#raw("PointD")#text(" 几何相等")],
+[#raw("same_point(a,b)")],[#text("整数精确；浮点按 EPS 相等")],
 )])
 
 
@@ -75,7 +83,7 @@ assert(cross(a, b, c) == 12 && dist2(b, c) == 25);
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp",))
+#source_code(("geometry/geometry_base.hpp",), shared: <shared-geometry-base>)
 
 
 == #text("直线与线段") <algo-geometry-line-segment>
@@ -122,6 +130,10 @@ table.header([#text("接口")],[#text("含义")]),
 
 #text("普通函数 / 函数模板：单次求解或回调骨架，不增加工程封装。")
 
+=== 精简后的接口约定
+
+整数与浮点版本共用同名函数模板，调用写法不变，只需选择 `PointI / LineI / SegmentI` 或 `PointD / LineD / SegmentD`。整数方向判定仍用 `i128`，差值先提升；共线区间比较不做可能溢出的整数减法。浮点保留原 EPS 和端点判定，退化线段按坐标逐维 EPS 相等，退化直线按方向向量长度判定。两者阈值含义不同，不相互替代。直线 `through(a,b)` 的方向向量仍存为 `i64`，要求 b−a 不溢出；叉积及平方距离仍须落在 i128 范围内。浮点交点、投影等只在非退化且相应分母非零时使用。
+
 === 最小调用示例
 
 ```cpp
@@ -133,7 +145,9 @@ assert(segment_relation(SegmentI{{0, 0}, {0, 0}}, a) ==
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/line_segment.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/line_segment.hpp",))
 
 
 == #text("三角形常用工具") <algo-geometry-triangle>
@@ -182,7 +196,9 @@ assert(!circumcenter({0, 0}, {1, 0}, {2, 0}));
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/triangle.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/triangle.hpp",))
 
 
 == #text("多边形基础") <algo-geometry-polygon>
@@ -232,7 +248,9 @@ assert(polygon_area2(p) == 32 &&
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/line_segment.hpp","geometry/polygon.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]、#ref(<algo-geometry-line-segment>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/polygon.hpp",))
 
 
 == #text("格点多边形：Pick 定理") <algo-geometry-pick>
@@ -275,7 +293,9 @@ assert(interior_lattice_points(
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/line_segment.hpp","geometry/polygon.hpp","geometry/pick.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]、#ref(<algo-geometry-line-segment>, supplement: none)、#ref(<algo-geometry-polygon>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/pick.hpp",))
 
 
 == #text("二维凸包 Andrew") <algo-geometry-convex-hull>
@@ -312,7 +332,9 @@ assert(h.size() == 3);
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/convex_hull.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/convex_hull.hpp",))
 
 
 == #text("凸多边形点包含 O(n)，含退化检查") <algo-geometry-convex-contains>
@@ -349,7 +371,9 @@ assert(point_in_convex_polygon(h, {2, 2}) == PointInPolygon::IN);
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/line_segment.hpp","geometry/polygon.hpp","geometry/convex_hull.hpp","geometry/convex_contains.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]、#ref(<algo-geometry-line-segment>, supplement: none)、#ref(<algo-geometry-polygon>, supplement: none)、#ref(<algo-geometry-convex-hull>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/convex_contains.hpp",))
 
 
 == #text("凸多边形点包含 O(n)，含退化检查") <algo-geometry-convex-contains-variant>
@@ -385,7 +409,9 @@ assert(point_in_convex_polygon(h, {2, 2}) == PointInPolygon::IN);
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/line_segment.hpp","geometry/polygon.hpp","geometry/convex_hull.hpp","geometry/convex_contains_variant.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]、#ref(<algo-geometry-line-segment>, supplement: none)、#ref(<algo-geometry-polygon>, supplement: none)、#ref(<algo-geometry-convex-hull>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/convex_contains_variant.hpp",))
 
 
 == #text("旋转卡壳：凸包直径") <algo-geometry-convex-diameter>
@@ -421,7 +447,9 @@ assert(convex_diameter(h)->d2 == 25);
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/line_segment.hpp","geometry/polygon.hpp","geometry/convex_hull.hpp","geometry/convex_diameter.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]、#ref(<algo-geometry-line-segment>, supplement: none)、#ref(<algo-geometry-polygon>, supplement: none)、#ref(<algo-geometry-convex-hull>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/convex_diameter.hpp",))
 
 
 == #text("旋转卡壳：最小面积外接矩形") <algo-geometry-bounding-rectangle>
@@ -458,7 +486,9 @@ assert(fabs(min_area_bounding_rectangle(h) - 6) < 1e-8);
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/line_segment.hpp","geometry/polygon.hpp","geometry/convex_hull.hpp","geometry/bounding_rectangle.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]、#ref(<algo-geometry-line-segment>, supplement: none)、#ref(<algo-geometry-polygon>, supplement: none)、#ref(<algo-geometry-convex-hull>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/bounding_rectangle.hpp",))
 
 
 == #text("最近点对") <algo-geometry-closest-pair>
@@ -501,7 +531,9 @@ assert(!closest_pair({}));
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/closest_pair.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/closest_pair.hpp",))
 
 
 == #text("半平面交") <algo-geometry-halfplane-intersection>
@@ -544,7 +576,9 @@ assert(fabs(polygon_area(p) - 6) < 1e-8);
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/line_segment.hpp","geometry/polygon.hpp","geometry/halfplane_intersection.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]、#ref(<algo-geometry-line-segment>, supplement: none)、#ref(<algo-geometry-polygon>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/halfplane_intersection.hpp",))
 
 
 == #text("圆基础") <algo-geometry-circle>
@@ -595,7 +629,9 @@ assert(fabs(circle_intersection_area(a, a) - PI) < 1e-8);
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/line_segment.hpp","geometry/triangle.hpp","geometry/circle.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]、#ref(<algo-geometry-line-segment>, supplement: none)、#ref(<algo-geometry-triangle>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/circle.hpp",))
 
 
 == #text("圆的切线") <algo-geometry-circle-tangents>
@@ -640,7 +676,9 @@ assert(r.tangents.size() == 3);
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/line_segment.hpp","geometry/triangle.hpp","geometry/circle.hpp","geometry/circle_tangents.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]、#ref(<algo-geometry-line-segment>, supplement: none)、#ref(<algo-geometry-triangle>, supplement: none)、#ref(<algo-geometry-circle>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/circle_tangents.hpp",))
 
 
 == #text("最小圆覆盖") <algo-geometry-minimum-enclosing-circle>
@@ -683,7 +721,9 @@ assert(same_point(c.o, {2, 0}) && fabs(c.r - 2) < 1e-8);
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/line_segment.hpp","geometry/triangle.hpp","geometry/circle.hpp","geometry/minimum_enclosing_circle.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]、#ref(<algo-geometry-line-segment>, supplement: none)、#ref(<algo-geometry-triangle>, supplement: none)、#ref(<algo-geometry-circle>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/minimum_enclosing_circle.hpp",))
 
 
 == #text("Minkowski Sum") <algo-geometry-minkowski-sum>
@@ -723,7 +763,9 @@ assert(p.size() == 3);
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/convex_hull.hpp","geometry/minkowski_sum.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]、#ref(<algo-geometry-convex-hull>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/minkowski_sum.hpp",))
 
 
 == #text("Convex Hull Trick：单调直线凸包") <algo-geometry-monotone-cht>
@@ -778,7 +820,9 @@ assert(h.query(3) == 3);
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/monotone_cht.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/monotone_cht.hpp",))
 
 
 == #text("三维几何基础") <algo-geometry-geometry-3d>
@@ -830,5 +874,31 @@ assert(dist(p, {0, 1, 0}) < 1e-8);
 
 === 模板引用
 
-#source_code(("geometry/geometry_base.hpp","geometry/geometry_3d.hpp",))
+*代码依赖：* 先复制 #link(<shared-geometry-base>)[二维点与向量骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("geometry/geometry_3d.hpp",))
+
+== 扫描线：矩形面积并 <algo-geometry-rectangle-union>
+
+*用途：* 求轴对齐矩形覆盖区域的总面积；重叠部分只计一次。整数坐标精确计算，不依赖浮点几何骨架。
+
+*复杂度：* n 个矩形，时间 `O(n log n)`，空间 `O(n)`，线段树深度 `O(log n)`。
+
+*下标与接口：* `rectangle_union(a)`，a 是 0-index 的 `{x1,y1,x2,y2}` 列表；返回 `__int128_t`。自动整理端点顺序、忽略零面积矩形，空输入返回 0，无全局状态。
+
+*注意事项：* 坐标绝对值不超过 `1e18`，差值和覆盖长度用 ll，面积用 i128；输出可复制工具章的 i128 输出方法。离散后的叶子 i 表示 `[ys[i],ys[i+1])`，故更新到 `lower_bound(y2)-1`。同 x 的事件依次处理面积增量为 0，不会重复计面积。本模板不求周长并；周长不能照搬逐事件面积写法。
+
+*现场记忆：* 先用旧覆盖长度乘 x 的增量，再更新本条边；cnt>0 整段被盖，cnt=0 才合并子节点长度。
+
+=== 最小调用示例
+
+```cpp
+vector<array<ll, 4>> a = {{0, 0, 2, 2}, {1, 1, 3, 3}};
+assert(rectangle_union(a) == 7);
+assert(rectangle_union({}) == 0);
+```
+
+=== 模板引用
+
+#source_code(("geometry/rectangle_union.hpp",))
 

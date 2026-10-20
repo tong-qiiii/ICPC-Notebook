@@ -4,6 +4,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 
 
@@ -13,6 +14,7 @@ def run(command, cwd):
 
 def main():
     root = Path(__file__).resolve().parents[2]
+    run([sys.executable, str(root / "test/basic/run_debug_test.py")], root)
     compiler = shutil.which(os.environ.get("CXX", "g++"))
     if compiler is None:
         raise SystemExit("C++17 compiler not found; set CXX or add g++ to PATH")
@@ -20,7 +22,8 @@ def main():
                      key=lambda h: (h.name != "int128_io.hpp", h.name))
     chapter = (root / "sections/01_tools.typ").read_text(encoding="utf-8")
     examples = re.findall(r"```cpp\n(.*?)\n```", chapter, re.DOTALL)
-    references = re.findall(r'#raw\(read\("([^"]+)"\)', chapter)
+    references = [ref for ref in re.findall(r'#raw\(read\("([^"]+)"\)', chapter)
+                  if ref.endswith(".hpp")]
     if len(examples) != len(headers) or len(references) != len(headers):
         raise SystemExit("Expected one calling example and source reference per basic header")
     for reference in references:

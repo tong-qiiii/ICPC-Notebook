@@ -1,0 +1,146 @@
+[
+  {
+    "heading": "扫描线：矩形面积并",
+    "label": "algo-geometry-rectangle-union",
+    "section": "sections/07_geometry.typ",
+    "templates": [
+      "code/geometry/rectangle_union.hpp"
+    ],
+    "tests": [
+      "test/geometry/rectangle_union_test.cpp"
+    ],
+    "change": "new"
+  },
+  {
+    "heading": "离线动态连通：线段树分治",
+    "label": "algo-graph-dynamic-connectivity",
+    "section": "sections/02_graph.typ",
+    "templates": [
+      "code/graph/dynamic_connectivity.hpp"
+    ],
+    "tests": [
+      "test/graph/dynamic_connectivity_test.cpp"
+    ],
+    "change": "new"
+  },
+  {
+    "heading": "公平组合游戏：Nim 与 SG",
+    "label": "algo-math-game-sg",
+    "section": "sections/06_math.typ",
+    "templates": [
+      "code/math/game_sg.hpp"
+    ],
+    "tests": [
+      "test/math/game_sg_test.cpp"
+    ],
+    "change": "new"
+  },
+  {
+    "heading": "异或高斯消元：bitset",
+    "label": "algo-math-gauss-xor",
+    "section": "sections/06_math.typ",
+    "templates": [
+      "code/math/gauss_xor.hpp"
+    ],
+    "tests": [
+      "test/math/gauss_xor_test.cpp"
+    ],
+    "change": "new"
+  },
+  {
+    "heading": "模素数行列式",
+    "label": "algo-math-determinant",
+    "section": "sections/06_math.typ",
+    "templates": [
+      "code/math/determinant.hpp"
+    ],
+    "tests": [
+      "test/math/determinant_test.cpp"
+    ],
+    "change": "new"
+  },
+  {
+    "heading": "矩阵树定理与加权生成树",
+    "label": "algo-counting-matrix-tree",
+    "section": "sections/12_counting.typ",
+    "templates": [
+      "code/counting/matrix_tree.hpp"
+    ],
+    "tests": [
+      "test/counting/matrix_tree_test.cpp"
+    ],
+    "change": "new"
+  },
+  {
+    "heading": "树状数组：区间加与区间和",
+    "label": "algo-data-structure-fenwick-range",
+    "section": "sections/04_data_structure.typ",
+    "templates": [
+      "code/data_structure/fenwick_range.hpp"
+    ],
+    "tests": [
+      "test/data_structure/fenwick_range_test.cpp"
+    ],
+    "change": "new"
+  },
+  {
+    "heading": "杜教筛：φ 与 μ 前缀和",
+    "label": "algo-math-dujiao",
+    "section": "sections/06_math.typ",
+    "templates": [
+      "code/math/dujiao.hpp"
+    ],
+    "tests": [
+      "test/math/dujiao_test.cpp"
+    ],
+    "change": "new"
+  },
+  {
+    "heading": "扩展 Lucas：合数模组合数",
+    "label": "algo-math-ex-lucas",
+    "section": "sections/06_math.typ",
+    "templates": [
+      "code/math/ex_lucas.hpp"
+    ],
+    "tests": [
+      "test/math/ex_lucas_test.cpp"
+    ],
+    "change": "new"
+  },
+  {
+    "heading": "LIS：严格递增、非降与方案恢复",
+    "label": "algo-dp-lis",
+    "section": "sections/10_dp.typ",
+    "templates": [
+      "code/dp/lis.hpp"
+    ],
+    "tests": [
+      "test/dp/lis_test.cpp"
+    ],
+    "change": "new"
+  },
+  {
+    "heading": "树上背包：含根连通选点",
+    "label": "algo-dp-tree-knapsack",
+    "section": "sections/10_dp.typ",
+    "templates": [
+      "code/dp/tree_knapsack.hpp"
+    ],
+    "tests": [
+      "test/dp/tree_knapsack_test.cpp"
+    ],
+    "change": "new"
+  },
+  {
+    "heading": "二分图最大匹配 Hopcroft-Karp",
+    "label": "algo-graph-hopcroft-karp",
+    "section": "sections/02_graph.typ",
+    "templates": [
+      "code/graph/hopcroft_karp.hpp"
+    ],
+    "tests": [
+      "test/graph/matching_cover_test.cpp"
+    ],
+    "change": "extend"
+  }
+]

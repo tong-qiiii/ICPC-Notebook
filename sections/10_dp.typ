@@ -4,12 +4,33 @@
 
 #text("统一约定：输入规模、节点号、版本号和查询区间须合法；空区间仅在接口明确支持时使用。递归实现需评估栈空间；整数中间值及累计值必须在对应类型范围内。多测重新调用 init / build / clear，普通函数的外部维护状态由调用者清空。各模板独立选用，同名 Info / Tag / Seg / Query 不应同时粘贴。")
 
-#let source_code(files) = {
-  let source = files.map(file => read("../code/" + file)
-    .replace(regex("(?m)^#pragma once\r?\n"), "")
-    .replace(regex("(?m)^#include \".*\"\r?\n"), "")).join("\n")
-  raw(source, lang: "cpp", block: true)
-}
+#import "../styles/source.typ": source_code
+
+== LIS：严格递增、非降与方案恢复 <algo-dp-lis>
+
+*用途：* 求最长严格递增或最长非降子序列，同时恢复一组原数组下标。子序列不要求连续。
+
+*复杂度：* 时间 `O(n log n)`，空间 `O(n)`。
+
+*下标与接口：* 输入 a 为 1-index ll 数组；`lis(a)` 严格递增，`lis(a,false)` 允许相等。返回递增的原下标序列，长度就是最优长度；空输入或只有哨兵返回空序列，多测无外部状态。
+
+*注意事项：* 严格用 lower_bound，非降用 upper_bound；tail 存的是最优结尾，tail 本身不能当成原数组中的方案。用 pre 记录前驱恢复，返回方案不承诺字典序最小；不提供 LIS 方案计数。
+
+*现场记忆：* 相等能否接上决定 lower / upper；恢复时存“这个位置之前”的前驱，最后从结尾下标往回走。
+
+=== 最小调用示例
+
+```cpp
+vector<ll> a = {0, 2, 2, 1, 3};
+assert(lis(a).size() == 2);
+assert(lis(a, false).size() == 3);
+auto p = lis(a);
+for (int i = 1; i < (int)p.size(); i++) assert(a[p[i - 1]] < a[p[i]]);
+```
+
+=== 模板引用
+
+#source_code(("dp/lis.hpp",))
 
 == #text("0/1、完全、多重、分组背包") <algo-dp-knapsack01>
 
@@ -146,6 +167,33 @@ assert(tree_independent_set(vector<vector<int>>{{}, {2, 3}, {1}, {1}},
 
 #source_code(("dp/tree_independent_set.hpp",))
 
+
+== 树上背包：含根连通选点 <algo-dp-tree-knapsack>
+
+*用途：* 在树中恰选 j 个点最大化点权和，非空方案必须包含给定根且连通；也对应“选择节点必须选择其祖先”的依赖背包。各组件任意选点或普通树独立集不能直接套。
+
+*复杂度：* 按子树大小截断合并；保守上界时间 `O(n*k²)`，空间 `O(n+k)`（输入、递归栈及同时存在的子树数组），不能为每个节点长期存一个 k 长数组。链状树递归深度 `O(n)`，大树须评估比赛环境栈空间。
+
+*下标与接口：* g、w 为 `1..n`，输入必须是连通无环树。`tree_knapsack(g,w,k,root)` 返回 `dp[0..k]`，root 默认 1；dp[0]=0，j>0 必须含根，不可达为 `LLONG_MIN/4`。k 可为 0 或大于 n，后者多出的状态不可达。每次调用重新初始化。
+
+*合并约定：* 初始 dp[1]=w[u]，儿子可以不选；选 t 个儿子子树节点时 `t<=j-1`，保证 u 自己占一位。j 倒序，t 正序或倒序均可；跳过不可达状态，不能把一个儿子重复合并。只枚举实际子树容量。
+
+*注意事项：* 允许负点权，不能把恰选状态初始化为 0；有效权和须大于 NEG，所有加法在 ll 内。若题目根不计数，可加权值 0 的虚根，答案改取 k+1；按题目重新确定连通与必选语义。
+
+*现场记忆：* 恰选初始化负无穷，含根保留一个名额，儿子合并时容量倒序；别直接套完全背包的正序。
+
+=== 最小调用示例
+
+```cpp
+vector<vector<int>> g = {{}, {2, 3}, {1}, {1}};
+vector<ll> w = {0, 5, -2, 4};
+auto f = tree_knapsack(g, w, 3);
+assert(f[0] == 0 && f[1] == 5 && f[2] == 9 && f[3] == 7);
+```
+
+=== 模板引用
+
+#source_code(("dp/tree_knapsack.hpp",))
 
 == #text("换根 DP（全点距离和）") <algo-dp-reroot-distance>
 

@@ -5,6 +5,34 @@ int main()
     using namespace poly998;
     Poly f({1, 2, 3}), g({4, 5});
     assert((f * g)[2] == 22);
+    assert(Poly({-1, MOD, 0}) == Poly(MOD - 1));
+    assert(f[-1] == 0 && f[100] == 0 && f.deg() == 2);
+    assert(f.rev(5) == Poly({0, 0, 3, 2, 1}));
+    assert(f.rev(2) == Poly({2, 1}));
+    assert(f.mul_xk(3).div_xk(3) == f);
+    assert(f.div_xk(20).empty() && f.mod_xk(0).empty());
+    assert(f + g - g == f && f * -7 / -7 == f && -(-f) == f);
+    assert(poly998::operator+(f, g) == f + g);
+    assert(poly998::operator*(f, 3) == 3 * f);
+    Poly z = f;
+    z += g; z -= g; z *= 2; z /= 2;
+    assert(z == f);
+    ensure_fact(0);
+    ensure_fact(100);
+    ensure_fact(3);
+    ensure_fact(200);
+    for (int i = 0; i <= 200; i++) assert(1LL * fac[i] * ifac[i] % MOD == 1);
+    auto iv = batch_inv({0, 2, -3, MOD});
+    assert(iv[0] == 0 && iv[3] == 0 && 2LL * iv[1] % MOD == 1);
+    assert(1LL * (MOD - 3) * iv[2] % MOD == 1);
+    assert(batch_inv({}).empty());
+    assert(mod_sqrt(0) == 0 && !mod_sqrt(G));
+    for (int i = 0; i < 300; i++)
+    {
+        int a = gen() % MOD;
+        auto r = mod_sqrt(1LL * a * a % MOD);
+        assert(r && 1LL * *r * *r % MOD == 1LL * a * a % MOD);
+    }
     {
         using namespace poly998;
         for (int t = 0; t < 300; t++)

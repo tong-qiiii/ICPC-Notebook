@@ -1,4 +1,4 @@
-"""Compile and run expanded chapter examples; optionally select topics."""
+"""Compile PDF skeletons + algorithm implementations + their minimal examples."""
 from concurrent.futures import ThreadPoolExecutor
 import argparse
 from pathlib import Path
@@ -8,15 +8,7 @@ import re
 import shutil
 import tempfile
 from check_headers import ROOT, execute
-
-
-def expand(paths):
-    chunks = []
-    for path in paths:
-        source = (ROOT / "code" / path).read_text(encoding="utf8")
-        source = re.sub(r'(?m)^#pragma once\n|^#include "[^"]+"\n', "", source)
-        chunks.append(source)
-    return "\n".join(chunks)
+from notebook_sources import audit, examples as copied_examples
 
 
 def main():
@@ -27,22 +19,10 @@ def main():
     if not compiler:
         raise SystemExit("Compiler not found; set CXX")
     base = re.search(r"```cpp\n(.*?)\n```", (ROOT / "STYLE.md").read_text(encoding="utf8"), re.S)[1]
-    examples = []
-    for chapter in sorted((ROOT / "sections").glob("*.typ")):
-        source = chapter.read_text(encoding="utf8")
-        matches = list(re.finditer(r'#source_code\(\((.*?)\)\)', source))
-        if not matches:
-            continue
-        previous = 0
-        for match in matches:
-            calls = re.findall(r"```cpp\n(.*?)\n```", source[previous:match.start()], re.S)
-            if len(calls) != 1:
-                raise RuntimeError("Expected one minimal example: " + chapter.name)
-            paths = re.findall(r'"([^"]+)"', match[1])
-            examples.append((paths[-1], expand(paths), calls[0]))
-            previous = match.end()
+    audit()
+    examples = copied_examples()
     headers = {h.relative_to(ROOT / "code").as_posix() for h in (ROOT / "code").glob("*/*.hpp")
-               if h.parent.name not in ["basic", "graph", "tree"]}
+               if h.parent.name not in ["basic", "tree"]}
     if {name for name, _, _ in examples} != headers or len(examples) != len(headers):
         raise RuntimeError("Chapter/source/example coverage mismatch")
     if args.topics:

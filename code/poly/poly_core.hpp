@@ -1,57 +1,8 @@
 #pragma once
-#include <bits/stdc++.h>
-using namespace std;
-#ifndef ll
-#define ll long long
-#endif
-
-#include <bits/stdc++.h>
-using namespace std;
+#include "ntt.hpp"
 
 namespace poly998
 {
-
-constexpr int MOD = 998244353;
-constexpr int G = 3;
-constexpr int MAX_LOG = 23; // MOD - 1 = 119 * 2^23
-
-inline int norm(long long x)
-{
-    x %= MOD;
-    if (x < 0)
-    {
-        x += MOD;
-    }
-    return (int)x;
-}
-
-inline int qpow(long long a, long long e)
-{
-    a = norm(a);
-    long long r = 1;
-    while (e)
-    {
-        if (e & 1)
-        {
-            r = r * a % MOD;
-        }
-        a = a * a % MOD;
-        e >>= 1;
-    }
-    return (int)r;
-}
-
-inline int invmod(long long x)
-{
-    int a = norm(x);
-    assert(a != 0);
-    return qpow(a, MOD - 2);
-}
-
-inline int inv_int(int x)
-{
-    return invmod(x);
-}
 
 inline vector<int> fac{1}, ifac{1};
 
@@ -160,160 +111,119 @@ inline optional<int> mod_sqrt(int a)
     return (int)x;
 }
 
-inline void ntt(vector<int> &a, bool invert)
-{
-    int n = (int)a.size();
-    if (n <= 1)
-    {
-        return;
-    }
-
-    assert((n & (n - 1)) == 0);
-    assert(n <= (1 << MAX_LOG));
-
-    for (int i = 1, j = 0; i < n; ++i)
-    {
-        int bit = n >> 1;
-        for (; j & bit; bit >>= 1)
-        {
-            j ^= bit;
-        }
-        j ^= bit;
-        if (i < j)
-        {
-            swap(a[i], a[j]);
-        }
-    }
-
-    for (int len = 2; len <= n; len <<= 1)
-    {
-        int wlen = qpow(G, (MOD - 1) / len);
-        if (invert)
-        {
-            wlen = invmod(wlen);
-        }
-
-        for (int i = 0; i < n; i += len)
-        {
-            long long w = 1;
-            int half = len >> 1;
-
-            for (int j = 0; j < half; ++j)
-            {
-                int u = a[i + j];
-                int v = (int)(w * a[i + j + half] % MOD);
-
-                int x = u + v;
-                if (x >= MOD)
-                {
-                    x -= MOD;
-                }
-                a[i + j] = x;
-
-                x = u - v;
-                if (x < 0)
-                {
-                    x += MOD;
-                }
-                a[i + j + half] = x;
-
-                w = w * wlen % MOD;
-            }
-        }
-    }
-
-    if (invert)
-    {
-        int inv_n = invmod(n);
-        for (int &x : a)
-        {
-            x = (int)(1LL * x * inv_n % MOD);
-        }
-    }
-}
-
-inline vector<int> convolution(const vector<int> &a, const vector<int> &b)
-{
-    if (a.empty() || b.empty())
-    {
-        return {};
-    }
-
-    if (1LL * a.size() * b.size() <= 4096)
-    {
-        vector<int> c(a.size() + b.size() - 1);
-
-        for (int i = 0; i < (int)a.size(); ++i)
-        {
-            int x = norm(a[i]);
-            for (int j = 0; j < (int)b.size(); ++j)
-            {
-                c[i + j] = (c[i + j] + 1LL * x * norm(b[j])) % MOD;
-            }
-        }
-
-        return c;
-    }
-
-    assert(a.size() + b.size() - 1 <= (1U << MAX_LOG));
-    int need = (int)a.size() + (int)b.size() - 1;
-    int n = 1;
-    while (n < need)
-    {
-        n <<= 1;
-    }
-
-    assert(n <= (1 << MAX_LOG));
-
-    vector<int> fa(a.begin(), a.end()), fb(b.begin(), b.end());
-    for (int &x : fa)
-    {
-        x = norm(x);
-    }
-    for (int &x : fb)
-    {
-        x = norm(x);
-    }
-
-    fa.resize(n);
-    fb.resize(n);
-
-    ntt(fa, false);
-    ntt(fb, false);
-
-    for (int i = 0; i < n; ++i)
-    {
-        fa[i] = (int)(1LL * fa[i] * fb[i] % MOD);
-    }
-
-    ntt(fa, true);
-    fa.resize(need);
-    return fa;
-}
-
 struct Poly
 {
     vector<int> a;
 
     Poly() = default;
-    Poly(long long c);
-    Poly(initializer_list<int> v);
-    explicit Poly(vector<int> v);
+    Poly(long long c)
+    {
+        c = norm(c);
+        if (c)
+        {
+            a = {(int)c};
+        }
+    }
+    Poly(initializer_list<int> v) : a(v)
+    {
+        for (int &x : a)
+        {
+            x = norm(x);
+        }
+        trim();
+    }
+    explicit Poly(vector<int> v) : a(move(v))
+    {
+        for (int &x : a)
+        {
+            x = norm(x);
+        }
+        trim();
+    }
 
-    void trim();
-    void normalize();
+    void trim()
+    {
+        while (!a.empty() && a.back() == 0)
+        {
+            a.pop_back();
+        }
+    }
+    void normalize()
+    {
+        trim();
+    }
 
-    int size() const;
-    bool empty() const;
-    int deg() const;
+    int size() const
+    {
+        return (int)a.size();
+    }
+    bool empty() const
+    {
+        return a.empty();
+    }
+    int deg() const
+    {
+        return size() - 1;
+    }
 
-    int operator[](int i) const;
-    int &raw(int i);
+    int operator[](int i) const
+    {
+        return 0 <= i && i < size() ? a[i] : 0;
+    }
+    int &raw(int i)
+    {
+        return a[i];
+    }
 
-    Poly mod_xk(int k) const;
-    Poly mul_xk(int k) const;
-    Poly div_xk(int k) const;
-    Poly rev(int n = -1) const;
+    Poly mod_xk(int k) const
+    {
+        if (k <= 0 || empty())
+        {
+            return Poly();
+        }
+        if (k >= size())
+        {
+            return *this;
+        }
+        return Poly(vector<int>(a.begin(), a.begin() + k));
+    }
+    Poly mul_xk(int k) const
+    {
+        assert(k >= 0);
+        if (empty())
+        {
+            return Poly();
+        }
+
+        vector<int> r(k);
+        r.insert(r.end(), a.begin(), a.end());
+        return Poly(move(r));
+    }
+    Poly div_xk(int k) const
+    {
+        if (k <= 0)
+        {
+            return *this;
+        }
+        if (k >= size())
+        {
+            return Poly();
+        }
+        return Poly(vector<int>(a.begin() + k, a.end()));
+    }
+    Poly rev(int n = -1) const
+    {
+        if (n < 0)
+        {
+            n = size();
+        }
+
+        vector<int> r = a;
+        r.resize(n);
+        reverse(r.begin(), r.end());
+
+        return Poly(move(r));
+    }
 
     Poly deriv() const;
     Poly integr() const;
@@ -341,261 +251,126 @@ struct Poly
     Poly compose_slow(const Poly &g, int n) const;
     Poly compositional_inverse_slow(int n) const;
 
-    friend bool operator==(const Poly &x, const Poly &y);
-    friend bool operator!=(const Poly &x, const Poly &y);
+    friend bool operator==(const Poly &x, const Poly &y)
+    {
+        return x.a == y.a;
+    }
+    friend bool operator!=(const Poly &x, const Poly &y)
+    {
+        return !(x == y);
+    }
 
-    friend Poly operator+(const Poly &x, const Poly &y);
-    friend Poly operator-(const Poly &x, const Poly &y);
-    friend Poly operator-(const Poly &x);
-    friend Poly operator*(const Poly &x, const Poly &y);
-    friend Poly operator*(const Poly &x, long long k);
-    friend Poly operator*(long long k, const Poly &x);
-    friend Poly operator/(const Poly &x, long long k);
+    friend Poly operator+(const Poly &x, const Poly &y)
+    {
+        vector<int> r(max(x.size(), y.size()));
+
+        for (int i = 0; i < (int)r.size(); ++i)
+        {
+            int v = x[i] + y[i];
+            if (v >= MOD)
+            {
+                v -= MOD;
+            }
+            r[i] = v;
+        }
+
+        return Poly(move(r));
+    }
+    friend Poly operator-(const Poly &x, const Poly &y)
+    {
+        vector<int> r(max(x.size(), y.size()));
+
+        for (int i = 0; i < (int)r.size(); ++i)
+        {
+            int v = x[i] - y[i];
+            if (v < 0)
+            {
+                v += MOD;
+            }
+            r[i] = v;
+        }
+
+        return Poly(move(r));
+    }
+    friend Poly operator-(const Poly &x)
+    {
+        vector<int> r = x.a;
+
+        for (int &v : r)
+        {
+            if (v)
+            {
+                v = MOD - v;
+            }
+        }
+
+        return Poly(move(r));
+    }
+    friend Poly operator*(const Poly &x, const Poly &y)
+    {
+        return Poly(convolution(x.a, y.a));
+    }
+    friend Poly operator*(const Poly &x, long long k)
+    {
+        int c = norm(k);
+        if (c == 0 || x.empty())
+        {
+            return Poly();
+        }
+
+        vector<int> r = x.a;
+        for (int &v : r)
+        {
+            v = (int)(1LL * v * c % MOD);
+        }
+
+        return Poly(move(r));
+    }
+    friend Poly operator*(long long k, const Poly &x)
+    {
+        return x * k;
+    }
+    friend Poly operator/(const Poly &x, long long k)
+    {
+        return x * invmod(k);
+    }
     friend Poly operator/(const Poly &x, const Poly &y);
     friend Poly operator%(const Poly &x, const Poly &y);
 
-    Poly &operator+=(const Poly &o);
-    Poly &operator-=(const Poly &o);
-    Poly &operator*=(const Poly &o);
-    Poly &operator*=(long long k);
-    Poly &operator/=(long long k);
+    Poly &operator+=(const Poly &o)
+    {
+        return *this = *this + o;
+    }
+    Poly &operator-=(const Poly &o)
+    {
+        return *this = *this - o;
+    }
+    Poly &operator*=(const Poly &o)
+    {
+        return *this = *this * o;
+    }
+    Poly &operator*=(long long k)
+    {
+        return *this = *this * k;
+    }
+    Poly &operator/=(long long k)
+    {
+        return *this = *this / k;
+    }
 
   private:
     optional<Poly> sqrt_nonzero_constant(int n) const;
 };
 
-inline Poly::Poly(long long c)
-{
-    c = norm(c);
-    if (c)
-    {
-        a = {(int)c};
-    }
-}
-
-inline Poly::Poly(initializer_list<int> v) : a(v)
-{
-    for (int &x : a)
-    {
-        x = norm(x);
-    }
-    trim();
-}
-
-inline Poly::Poly(vector<int> v) : a(move(v))
-{
-    for (int &x : a)
-    {
-        x = norm(x);
-    }
-    trim();
-}
-
-inline void Poly::trim()
-{
-    while (!a.empty() && a.back() == 0)
-    {
-        a.pop_back();
-    }
-}
-
-inline void Poly::normalize()
-{
-    trim();
-}
-
-inline int Poly::size() const
-{
-    return (int)a.size();
-}
-
-inline bool Poly::empty() const
-{
-    return a.empty();
-}
-
-inline int Poly::deg() const
-{
-    return size() - 1;
-}
-
-inline int Poly::operator[](int i) const
-{
-    return 0 <= i && i < size() ? a[i] : 0;
-}
-
-inline int &Poly::raw(int i)
-{
-    return a[i];
-}
-
-inline Poly Poly::mod_xk(int k) const
-{
-    if (k <= 0 || empty())
-    {
-        return Poly();
-    }
-    if (k >= size())
-    {
-        return *this;
-    }
-    return Poly(vector<int>(a.begin(), a.begin() + k));
-}
-
-inline Poly Poly::mul_xk(int k) const
-{
-    assert(k >= 0);
-    if (empty())
-    {
-        return Poly();
-    }
-
-    vector<int> r(k);
-    r.insert(r.end(), a.begin(), a.end());
-    return Poly(move(r));
-}
-
-inline Poly Poly::div_xk(int k) const
-{
-    if (k <= 0)
-    {
-        return *this;
-    }
-    if (k >= size())
-    {
-        return Poly();
-    }
-    return Poly(vector<int>(a.begin() + k, a.end()));
-}
-
-inline Poly Poly::rev(int n) const
-{
-    if (n < 0)
-    {
-        n = size();
-    }
-
-    vector<int> r = a;
-    r.resize(n);
-    reverse(r.begin(), r.end());
-
-    return Poly(move(r));
-}
-
-inline bool operator==(const Poly &x, const Poly &y)
-{
-    return x.a == y.a;
-}
-
-inline bool operator!=(const Poly &x, const Poly &y)
-{
-    return !(x == y);
-}
-
-inline Poly operator+(const Poly &x, const Poly &y)
-{
-    vector<int> r(max(x.size(), y.size()));
-
-    for (int i = 0; i < (int)r.size(); ++i)
-    {
-        int v = x[i] + y[i];
-        if (v >= MOD)
-        {
-            v -= MOD;
-        }
-        r[i] = v;
-    }
-
-    return Poly(move(r));
-}
-
-inline Poly operator-(const Poly &x, const Poly &y)
-{
-    vector<int> r(max(x.size(), y.size()));
-
-    for (int i = 0; i < (int)r.size(); ++i)
-    {
-        int v = x[i] - y[i];
-        if (v < 0)
-        {
-            v += MOD;
-        }
-        r[i] = v;
-    }
-
-    return Poly(move(r));
-}
-
-inline Poly operator-(const Poly &x)
-{
-    vector<int> r = x.a;
-
-    for (int &v : r)
-    {
-        if (v)
-        {
-            v = MOD - v;
-        }
-    }
-
-    return Poly(move(r));
-}
-
-inline Poly operator*(const Poly &x, const Poly &y)
-{
-    return Poly(convolution(x.a, y.a));
-}
-
-inline Poly operator*(const Poly &x, long long k)
-{
-    int c = norm(k);
-    if (c == 0 || x.empty())
-    {
-        return Poly();
-    }
-
-    vector<int> r = x.a;
-    for (int &v : r)
-    {
-        v = (int)(1LL * v * c % MOD);
-    }
-
-    return Poly(move(r));
-}
-
-inline Poly operator*(long long k, const Poly &x)
-{
-    return x * k;
-}
-
-inline Poly operator/(const Poly &x, long long k)
-{
-    return x * invmod(k);
-}
-
-inline Poly &Poly::operator+=(const Poly &o)
-{
-    return *this = *this + o;
-}
-
-inline Poly &Poly::operator-=(const Poly &o)
-{
-    return *this = *this - o;
-}
-
-inline Poly &Poly::operator*=(const Poly &o)
-{
-    return *this = *this * o;
-}
-
-inline Poly &Poly::operator*=(long long k)
-{
-    return *this = *this * k;
-}
-
-inline Poly &Poly::operator/=(long long k)
-{
-    return *this = *this / k;
-}
+// 保留 poly998::operator+ 等显式限定调用。
+inline bool operator==(const Poly &x, const Poly &y);
+inline bool operator!=(const Poly &x, const Poly &y);
+inline Poly operator+(const Poly &x, const Poly &y);
+inline Poly operator-(const Poly &x, const Poly &y);
+inline Poly operator-(const Poly &x);
+inline Poly operator*(const Poly &x, const Poly &y);
+inline Poly operator*(const Poly &x, long long k);
+inline Poly operator*(long long k, const Poly &x);
+inline Poly operator/(const Poly &x, long long k);
 
 } // namespace poly998

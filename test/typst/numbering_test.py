@@ -221,6 +221,7 @@ def main():
                 (work / "main.typ").write_text(entry, encoding="utf8")
                 shutil.copy2(ROOT / "STYLE.md", work / "STYLE.md")
                 shutil.copytree(ROOT / "code", work / "code")
+                shutil.copytree(ROOT / "styles", work / "styles")
                 for filename, source in sources.items():
                     (work / "sections" / filename).write_text(source, encoding="utf8")
                 command = [compiler, "eval", EXPRESSION, "--root", str(work),

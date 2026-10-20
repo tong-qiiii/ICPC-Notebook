@@ -124,7 +124,7 @@ git push origin notebook-v1.0.0
 2. 在 `code/<topic>/` 下添加小写下划线命名的 `.hpp` 或 `.cpp` 文件，保证兼容 C++17。
 3. 在 `test/<topic>/` 下添加对应的 `<algorithm>_test.cpp`，覆盖常见输入和边界条件，并按需要对拍。
 4. 使用支持 C++17 的编译器验证模板，例如编译相关测试时使用 `g++ -std=c++17 -O2 -Wall -Wextra`，随后运行测试。
-5. 在 `sections/NN_topic.typ` 中添加算法说明和源码引用。代码引用路径相对于章节文件，指向 `../code/<topic>/<algorithm>.hpp` 或 `.cpp`，使用 `read` 配合 `raw` 展示源码。
+5. 在 `sections/NN_topic.typ` 中添加算法说明和源码引用。使用 `styles/source.typ` 的 `source_code` 展示自身文件；共享骨架集中在章首完整展示一次，其余依赖用稳定标签链接到已有算法，禁止每个代码块重贴整条依赖链。
 6. 使用 `== 算法名称 <algo-stable-id>` 在章节的期望位置插入算法；新建章节使用 `= 章节名称 <chapter-stable-id>`，在 `main.typ` 的期望位置导入。三级 / 四级标题用于无编号辅助说明，具体规则见下方。
 7. 编译 Notebook，检查 PDF 排版及 `git diff`、`git status`，确认 `raw/` 没有变化后再按需提交。
 
@@ -173,9 +173,9 @@ python test/basic/run_tests.py
 python test/graph/run_tests.py
 ```
 
-脚本验证每份头文件独立编译、个人基础模板宏兼容、样例与边界、多次调用、随机或穷举对拍，并编译运行章节中展开依赖后的全部调用示例。检查包含 `-std=c++17` 与 GNU++17 两种模式，生成产物只写入临时目录。
+脚本验证每份头文件独立编译、个人基础模板宏兼容、样例与边界、多次调用、随机或穷举对拍，并编译运行“公共骨架＋所需基础算法＋当前算法＋调用”的全部复制示例。检查包含 `-std=c++17` 与 GNU++17 两种模式，生成产物只写入临时目录。
 
-比赛时从 PDF 复制个人基础模板及所需算法实现，无需引用仓库头文件。DSU、Dinic 等依赖会在相应模板处完整展示；组合多份算法时，共用实现只复制一次。两版费用流分别使用 `MCMF` 与 `MCMFPotential`，可以同时包含。
+比赛时从 PDF 复制个人基础模板及所需算法实现，无需引用仓库头文件。DSU、Dinic 等公共骨架只在章首完整展示一次；各算法通过链接注明依赖，自身代码块不重复打印骨架。组合多份算法时，共用实现只复制一次。两版费用流分别使用 `MCMF` 与 `MCMFPotential`，可以同时包含。
 
 ## 树论验证与比赛使用
 
@@ -189,19 +189,31 @@ python test/tree/run_tests.py
 
 本章保留递归 DFS，深链应评估栈空间；LCT 仍为迭代 Splay。点分治内部使用 GCC `__int128` 累加距离，避免 `ll` 边权累加溢出；其余权值运算的 `ll` 范围约束见对应模板说明。PDF 展示的模板已包含标准头文件及 `ll` 兜底宏，移除的只有维护用 `#pragma once`，无需引用仓库头文件。
 
+## Linux 本地编译与调试
+
+第一章提供 `code/basic/run` 与 `code/basic/debug` 两个无后缀 Bash 脚本。复制到题目目录，准备好 `a.cpp`、`a.in` 后执行：
+
+```bash
+chmod +x run debug
+./run a
+./debug a
+```
+
+答案写入 `a.out`，报错和计时显示在终端。调试版启用 ASan / UBSan 和 STL 调试检查；编译参数、栈限制及使用边界见第一章。脚本使用 LF 换行；也可直接 `bash run a`。只检查这两份脚本时运行 `python test/basic/run_debug_test.py`，不进行性能测试。
+
 ## 全项目验证
 
 ```sh
 python test/run_all.py
 ```
 
-第 4～10 章也可分别运行 `python test/<topic>/run_tests.py`，topic 为 `data_structure`、`interval_greedy`、`math`、`geometry`、`poly`、`string`、`dp`。新测试检查独立 C++17 编译、个人基础模板宏兼容、多翻译单元链接、基础样例、边界及适用的随机对拍；`test/check_examples.py` 另编译运行 PDF 中展开依赖后的最小调用示例，数量按章节自动统计。`test/check_manifest.py` 核对原稿条目、文件对应关系、原始哈希及章节完整且不重复导入，允许调整导入顺序；原稿以外的新增模板在清单的 `additions` 中单列。
+第 4～10 章也可分别运行 `python test/<topic>/run_tests.py`，topic 为 `data_structure`、`interval_greedy`、`math`、`geometry`、`poly`、`string`、`dp`。新测试检查独立 C++17 编译、个人基础模板宏兼容、多翻译单元链接、基础样例、边界及适用的随机对拍；`test/notebook_sources.py` 检查公共骨架去重与依赖链接，`test/check_examples.py` 按实际依赖顺序拼接 PDF 中分开展示的代码并编译运行最小调用示例（也覆盖图论，可用 `geometry poly` 等主题参数只检查相关章）。`test/check_manifest.py` 核对原稿条目、文件对应关系、原始哈希及章节完整且不重复导入，允许调整导入顺序；原稿以外的新增模板在清单的 `additions` 中单列。
 
 数据结构章补充了 Beats（区间取小 / 取大 / 加法与和、最值查询）、zkw 单点修改版和 zkw 区间加 / 和版。Beats 按节点信息与树框架分层；zkw 使用数值数组，区间版采用永久标记，无 Info/Tag 层。测试覆盖混合操作暴力对拍、极值及次值、非二次幂长度、祖先标记和多测重建。各版同名 `Seg` 独立选用，接口和赛场修改位置见章节说明。
 
 需 GCC（支持 `bits/stdc++.h` 与 `__int128`）、Python 3，以及高精度模板使用的 Boost.Multiprecision 头文件。Boost 不在默认搜索路径时，Linux / macOS 可设置 `CPLUS_INCLUDE_PATH=/path/to/boost`，PowerShell 可设置 `$env:CPLUS_INCLUDE_PATH = 'D:/path/to/boost'`，该目录下应存在 `boost/multiprecision/cpp_int.hpp`。不必链接 Boost 二进制库。可通过 `CXX` 指定 GCC；测试产物放入临时目录，Python 缓存由 Git 忽略。
 
-各新章节的依赖直接在 PDF 中展开。组合多个模板时，共用实现只复制一次；同名 `Info`、`Tag`、`Seg`、`Node` 等独立版本按题选择，不要求它们能在同一作用域同时包含。莫队、数位 DP 等回调骨架仍需实现题意维护；WQS、分治 / Knuth 优化的数学条件以及浮点几何误差应按实际题目复核，测试通过不替代这些前提。
+公共骨架集中在所属章首，算法代码只展示自身部分，并链接到需要先复制的骨架或基础算法；数学与概率等跨章依赖也复用同一处代码。所有说明、示例和原算法标题保留。组合多个模板时，共用实现只复制一次；同名 `Info`、`Tag`、`Seg`、`Node` 等独立版本按题选择，不要求它们能在同一作用域同时包含。莫队、数位 DP 等回调骨架仍需实现题意维护；WQS、分治 / Knuth 优化的数学条件以及浮点几何误差应按实际题目复核，测试通过不替代这些前提。
 
 
 ## 概率与期望专题
@@ -227,4 +239,10 @@ python test/counting/run_tests.py
 python test/check_examples.py counting
 ```
 
-公式测试使用精确整数 / 分数，包含小规模枚举、有限差分、容斥、反演、群轨道、路径族、树、有限域矩阵与 Young 图可移角对照。它验证的是明确有限范围的样例，不代替一般定理证明；新题仍须检查对象标号、边界、符号、群作用、LGV 配对条件及模分母。任意模组合数、通用 determinant 等仅给实现路线，不宣称项目已有相应独立板子。默认不自动构建完整 PDF，也不提交、推送或发布。
+公式测试使用精确整数 / 分数，包含小规模枚举、有限差分、容斥、反演、群轨道、路径族、树、有限域矩阵与 Young 图可移角对照。它验证的是明确有限范围的样例，不代替一般定理证明；新题仍须检查对象标号、边界、符号、群作用、LGV 配对条件及模分母。扩展 Lucas 与模素数行列式的可复制实现见数学章，须遵守对应模数和规模限制。默认不自动构建完整 PDF，也不提交、推送或发布。
+
+## 常用模型补充
+
+新增扫描线矩形面积并、线段树分治动态连通、Nim / SG、bitset 异或高斯、模素数行列式、矩阵树调用、区间树状数组、杜教筛、扩展 Lucas、LIS 恢复与树上背包；Hopcroft–Karp 增加最小点覆盖 / 最大独立集恢复。均放入已有章节，沿用自动编号与共享代码单次展示。补充清单见 `test/additions_manifest.json`。
+
+本批补充的集中检查入口为 `python test/check_additions.py`，覆盖独立编译、个人宏、多翻译单元链接、随机 / 暴力对拍和复制调用示例；也已纳入各章 `test/<topic>/run_tests.py`。日常维护只运行与改动相关的编译和正确性测试。扫描线返回面积和杜教筛的 φ 前缀使用 GNU `__int128`；扩展 Lucas 按质数幂开表，不能忽略模数导致的内存成本。

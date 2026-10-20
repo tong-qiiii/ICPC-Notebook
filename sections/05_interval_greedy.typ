@@ -4,12 +4,7 @@
 
 #text("统一约定：输入规模、节点号、版本号和查询区间须合法；空区间仅在接口明确支持时使用。递归实现需评估栈空间；整数中间值及累计值必须在对应类型范围内。多测重新调用 init / build / clear，普通函数的外部维护状态由调用者清空。各模板独立选用，同名 Info / Tag / Seg / Query 不应同时粘贴。")
 
-#let source_code(files) = {
-  let source = files.map(file => read("../code/" + file)
-    .replace(regex("(?m)^#pragma once\r?\n"), "")
-    .replace(regex("(?m)^#include \".*\"\r?\n"), "")).join("\n")
-  raw(source, lang: "cpp", block: true)
-}
+#import "../styles/source.typ": source_code
 
 == #text("区间集合合法二元组计数") <algo-interval-greedy-count-pairs-small>
 

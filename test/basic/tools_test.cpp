@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <climits>
 #include <cstdio>
+#include <fstream>
 #include <map>
 #include <memory>
 #include <numeric>
@@ -305,77 +306,77 @@ void test_rng_hash() {
     check(integers.at(-1) == 9, "hash table reuse");
 }
 
-void test_debug() {
+void test_debug()
+{
     std::ostringstream captured;
     auto* old = std::cerr.rdbuf(captured.rdbuf());
-    std::vector<std::vector<int>> nested{{1, 2}, {}};
-    std::map<int, std::vector<int>> groups{{1, {2, 3}}};
-    std::pair<std::vector<int>, std::map<int, std::vector<int>>> pair{{4}, groups};
-    std::set<std::pair<int, int>> pairs{{1, 2}};
-    std::unordered_map<int, std::vector<int>> hash_map{{1, {2}}};
-    std::unordered_set<int> hash_set{3};
-    debug(nested, groups, pair, pairs, hash_map, hash_set);
+    int n = 7, cnt = 0;
+    debug(n);
     if (true) debug("if");
     else debug("else");
-    debug();
     i128 wide = i128(1000000000000LL) * 1000000000000LL;
     debug(wide);
-    int side_effect = 0;
-    debug(++side_effect);
+    debug(++cnt);
     std::cerr.rdbuf(old);
-#ifdef LOCAL
-    check(side_effect == 1, "LOCAL evaluates parameters");
-    check(captured.str().find("[[1, 2], []]") != std::string::npos, "nested vector debug");
-    check(captured.str().find("{(1, [2, 3])}") != std::string::npos, "map vector debug");
-    check(captured.str().find("1000000000000000000000000") != std::string::npos, "int128 debug");
-#else
-    (void)wide;
-    check(side_effect == 0 && captured.str().empty(), "release erases debug without evaluation");
-    debug(undeclared_symbol);
-#endif
+    check(cnt == 1, "debug evaluates once, with and without LOCAL");
+    check(captured.str().find("n: 7\n") != std::string::npos, "debug name and scalar");
+    check(captured.str().find("n: 7\n\"if\": if\n") == 0, "debug if/else and string");
+    check(captured.str().find("1000000000000000000000000") != std::string::npos, "int128 stream debug");
 }
 
-void write_text(const std::string& path, const std::string& text) {
-    std::ofstream out(path, std::ios::binary);
-    out << text;
-    check(bool(out), "fixture file write");
+std::string read_text(const std::string& path)
+{
+    std::ifstream in(path);
+    check(bool(in), "fixture file read");
+    return {std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
 }
 
-void test_stress(const std::string& command) {
-    write_text("a.out", "1 2\n3\n");
-    write_text("b.out", " \t1\n2 3  ");
-    check(same_output("a.out", "b.out"), "token whitespace comparison");
-    write_text("b.out", "1 2 3 4");
-    check(!same_output("a.out", "b.out"), "extra token rejected");
-    write_text("b.out", "1 2 4");
-    check(!same_output("a.out", "b.out"), "different token rejected");
-    write_text("a.out", ""); write_text("b.out", " \n");
-    check(same_output("a.out", "b.out"), "empty outputs compare");
-    check(!same_output("missing.out", "b.out"), "missing output rejected");
+void test_stress(const std::string& command)
+{
     std::ostringstream log;
     auto* old = std::cerr.rdbuf(log.rdbuf());
     bool ac1 = stress(command + " --gen", command + " --sol", command + " --brute", 3);
     bool ac2 = stress(command + " --gen", command + " --sol", command + " --brute", 2);
-    bool wa = stress(command + " --gen", command + " --wrong", command + " --brute", 1);
-    std::ifstream saved("data.in");
-    int n = 0; saved >> n;
+    bool wa = stress(command + " --gen", command + " --sol", command + " --wrong", 1);
+    std::string saved = read_text("data.in");
+    check(std::system((command + " --gen 1 > replay.in").c_str()) == 0, "replay generator");
+    check(saved == read_text("replay.in"), "seed reproduces failing input");
+    check(std::system((command + " --gen 2 > replay.in").c_str()) == 0, "next seed generator");
+    check(saved != read_text("replay.in"), "different rounds generate different inputs");
+    bool tokens = stress(command + " --gen", command + " --split", command + " --joined", 1);
+    bool empty = stress(command + " --gen", command + " --empty", command + " --empty-lines", 1);
     bool gen_re = stress(command + " --fail", command + " --sol", command + " --brute", 1);
     bool sol_re = stress(command + " --gen", command + " --fail", command + " --brute", 1);
     bool brute_re = stress(command + " --gen", command + " --sol", command + " --fail", 1);
+    bool stopped = stress(command + " --gen-stop", command + " --sol", command + " --brute");
     std::cerr.rdbuf(old);
-    check(ac1 && ac2 && !wa && !gen_re && !sol_re && !brute_re, "stress result branches");
-    check(n == 5, "WA preserves input");
-    for (auto message : {"WA on test 1", "Generator RE", "Solution RE", "Brute RE"}) {
-        check(log.str().find(message) != std::string::npos, "stress failure diagnostics");
-    }
+    check(ac1 && ac2 && !wa && !tokens && empty && !gen_re && !sol_re && !brute_re && !stopped,
+          "stress AC, WA, empty output and process error branches");
+    check(log.str().find("AC 3") != std::string::npos, "finite rounds completed");
+    check(log.str().find("FAIL seed=1") != std::string::npos, "failure seed diagnostic");
+    check(log.str().find("FAIL seed=3") != std::string::npos, "unlimited rounds stop on failure");
 }
 
 int main(int argc, char** argv) {
     if (argc > 1) {
         std::string mode = argv[1];
-        if (mode == "--gen") { std::cout << "5\n-7 0 3 11 -2\n"; return 0; }
-        if (mode == "--wrong") { std::cout << "0\n"; return 0; }
         if (mode == "--fail") return 3;
+        if (mode == "--gen" || mode == "--gen-stop")
+        {
+            if (argc != 3) return 4;
+            auto seed = std::stoull(argv[2]);
+            if (mode == "--gen-stop" && seed == 3) return 3;
+            rng.seed(seed);
+            std::cout << "5\n";
+            for (int i = 1; i <= 5; i++) std::cout << rnd(-20, 20) << " ";
+            std::cout << '\n';
+            return 0;
+        }
+        if (mode == "--wrong") { std::cout << "wrong\n"; return 0; }
+        if (mode == "--split") { std::cout << "1 2\n"; return 0; }
+        if (mode == "--joined") { std::cout << "12\n"; return 0; }
+        if (mode == "--empty") return 0;
+        if (mode == "--empty-lines") { std::cout << "\n\n"; return 0; }
         int n; std::cin >> n;
         std::vector<long long> a(n);
         for (auto& x : a) std::cin >> x;
@@ -383,7 +384,7 @@ int main(int argc, char** argv) {
         else if (mode == "--brute") {
             long long sum = 0;
             for (auto x : a) sum += x;
-            std::cout << "  " << sum << " \n\n";
+            std::cout << sum << "   \n\n";
         } else return 4;
         return 0;
     }

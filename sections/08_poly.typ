@@ -4,12 +4,34 @@
 
 #text("统一约定：输入规模、节点号、版本号和查询区间须合法；空区间仅在接口明确支持时使用。递归实现需评估栈空间；整数中间值及累计值必须在对应类型范围内。多测重新调用 init / build / clear，普通函数的外部维护状态由调用者清空。各模板独立选用，同名 Info / Tag / Seg / Query 不应同时粘贴。")
 
-#let source_code(files) = {
-  let source = files.map(file => read("../code/" + file)
-    .replace(regex("(?m)^#pragma once\r?\n"), "")
-    .replace(regex("(?m)^#include \".*\"\r?\n"), "")).join("\n")
-  raw(source, lang: "cpp", block: true)
-}
+#import "../styles/source.typ": source_code
+
+
+=== 公共代码与复制顺序
+
+本章源码块仅展示算法自身实现；公共骨架只打印一次。按依赖链接复制所需的公共代码，再复制本算法与调用示例，比赛时不需要仓库头文件。已有基础算法被复用时，直接复制其原条目，不在每个代码块里重贴。
+
+*依赖索引：* #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-vector>)[vector 运算]、#link(<shared-poly-core>)[Poly 核心]、#ref(<algo-poly-fps>, supplement: none)、#ref(<algo-poly-division-evaluation>, supplement: none)、#ref(<algo-poly-bostan-mori>, supplement: none)。
+
+仅求卷积：复制轻量 NTT 即可。完整 Poly / FPS：复制 NTT 与 Poly 核心，再按依赖链接补齐成员实现。独立 vector 版多点求值 / 插值：复制 NTT 与 vector 运算，再复制对应乘积树；不必带上完整 Poly / FPS。两套接口混用时明确写 `::Poly`（vector）或 `poly998::Poly`（类），不要同时用裸 `Poly` 和 `using namespace poly998`。
+
+=== 公共骨架：轻量 NTT <shared-poly-ntt>
+
+用途：模 998244353 卷积与原地 NTT；下标从 0 开始，时间 O(n log n)、空间 O(n)。`convolution` 接受有符号系数并返回未裁剪的 n+m−1 项，空输入返回空；直接调用 `ntt` 时系数先归一化到 `[0, MOD)`。非空变换长度必须为 2 的幂且不超过 2^23，中间卷积长度也受限。快速幂指数非负，求逆参数模 MOD 非零。现场记忆：原根 3，逆变换用逆根，最后乘长度的逆元。
+
+#source_code(("poly/ntt.hpp",))
+
+=== 公共骨架：vector 运算 <shared-poly-vector>
+
+先复制 #link(<shared-poly-ntt>)[轻量 NTT]。保持原 `Poly=vector<int>`、`modPow / mul / norm / addPoly / polyInv / polyMod` 接口；`norm` 只删除高位零，不归一化负数。除卷积外的输入系数须在 `[0, MOD)`。`polyInv(a,n)` 返回恰好 n 项，n≤0 返回空，非空求逆要求 a 的常数项非零；`polyMod(a,b)` 要求 b 非空且最高项非零，常数除数的余式为空。乘法、求逆、求余复杂度为 O(M(n)) 量级（以各自参与运算的最大长度计），加法 / 裁尾 O(n)。现场记忆：Newton 求逆 `g ← g(2−fg)`，翻转除法后减回乘积。
+
+#source_code(("poly/vector_core.hpp",))
+
+=== 公共骨架：Poly 核心 <shared-poly-core>
+
+先复制 #link(<shared-poly-ntt>)[轻量 NTT]。完整类只在此处展示一次；用途、接口和调用仍见 #ref(<algo-poly-poly-core>, supplement: none)。
+
+#source_code(("poly/poly_core.hpp",))
 
 == #text("多项式核心 - NTT / Poly") <algo-poly-poly-core>
 
@@ -20,7 +42,7 @@
 #strong[#text("复杂度")]#text("：乘法 ")#raw("O(n log n)")#text("，加减 / 截断 / 翻转 ")#raw("O(n)")#text("。")
 #strong[#text("下标")]#text("：")#raw("0-indexed")#text("，")#raw("a[i] = [x^i]f(x)")#text("。")
 #strong[#text("限制")]#text("：单次 NTT 长度 ")#raw("<= 2^23")#text("。")
-#strong[#text("注意")]#text("：后续多项式板块直接补充本块中声明的成员函数，各模板在下方已展开所需依赖，选择对应完整块复制；合并多个模板时共用核心只粘贴一次。")
+#strong[#text("注意")]#text("：NTT、vector 运算与 Poly 核心分层集中在章首；后续板块只展示本算法对 Poly 成员函数的定义。按依赖链接依次复制所需实现，共用核心、FPS 等代码只粘贴一次。")
 
 
 
@@ -60,6 +82,15 @@ table.header([#text("接口 / 变量")],[#text("含义")]),
 
 #text("统一 namespace poly998；外部若需归一化请写 poly998::norm(x)，避免 std::norm(int) 的重载。NTT 长度 2 的幂且 <=2^23；乘法先检查卷积所需长度。复合 FPS 的中间卷积长度也受此限制，不能只检查最终截断长度。向量动态分配仍受比赛内存限制。")
 
+=== 轻量 NTT 最小调用
+
+```cpp
+auto c = poly998::convolution({1, 2, 3}, {4, 5});
+assert((c == vector<int>{4, 13, 22, 15}));
+```
+
+#source_code(("poly/ntt.hpp",), shared: <shared-poly-ntt>)
+
 === 最小调用示例
 
 ```cpp
@@ -70,7 +101,9 @@ assert((f * g)[2] == 22);
 
 === 模板引用
 
-#source_code(("poly/poly_core.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]；各依赖只复制一次。
+
+#source_code(("poly/poly_core.hpp",), shared: <shared-poly-core>)
 
 
 == #text("形式幂级数 FPS - 逆 / ln / exp / 幂 / sqrt / 三角函数") <algo-poly-fps>
@@ -129,7 +162,9 @@ assert((f * f.inv(10)).mod_xk(10) == Poly(1));
 
 === 模板引用
 
-#source_code(("poly/poly_core.hpp","poly/fps.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/fps.hpp",))
 
 
 == #text("多项式除法 / 多点求值 / 插值") <algo-poly-division-evaluation>
@@ -180,7 +215,9 @@ assert(Poly::interpolate({0, 1, 2}, ys) == f);
 
 === 模板引用
 
-#source_code(("poly/poly_core.hpp","poly/fps.hpp","poly/division_evaluation.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]、#ref(<algo-poly-fps>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/division_evaluation.hpp",))
 
 
 == #text("多项式平移 / Chirp-Z / 连续点值平移") <algo-poly-taylor-shift>
@@ -225,7 +262,9 @@ assert(Poly({1, 2, 3}).shift(1) == Poly({6, 8, 3}));
 
 === 模板引用
 
-#source_code(("poly/poly_core.hpp","poly/taylor_shift.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/taylor_shift.hpp",))
 
 ==== #text("chirp_z")
 
@@ -234,7 +273,9 @@ using namespace poly998;
 assert((chirp_z(Poly({1, 2}), 2, 3) == vector<int>{3, 5, 9}));
 ```
 
-#source_code(("poly/poly_core.hpp","poly/chirp_z.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/chirp_z.hpp",))
 ==== #text("consecutive_shift")
 
 ```cpp
@@ -242,7 +283,9 @@ using namespace poly998;
 assert((consecutive_value_shift({1, 3}, 2, 3) == vector<int>{5, 7, 9}));
 ```
 
-#source_code(("poly/poly_core.hpp","poly/consecutive_shift.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/consecutive_shift.hpp",))
 
 == #text("位运算卷积 - FWT XOR / OR / AND") <algo-poly-fwt-xor>
 
@@ -287,7 +330,9 @@ assert(r.size() == 2);
 
 === 模板引用
 
-#source_code(("poly/poly_core.hpp","poly/fwt_xor.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/fwt_xor.hpp",))
 
 ==== #text("fwt_or")
 
@@ -297,7 +342,9 @@ auto r = or_convolution({1, 2}, {3, 4});
 assert(r.size() == 2);
 ```
 
-#source_code(("poly/poly_core.hpp","poly/fwt_or.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/fwt_or.hpp",))
 ==== #text("fwt_and")
 
 ```cpp
@@ -306,7 +353,9 @@ auto r = and_convolution({1, 2}, {3, 4});
 assert(r.size() == 2);
 ```
 
-#source_code(("poly/poly_core.hpp","poly/fwt_and.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/fwt_and.hpp",))
 
 == #text("线性递推 - Bostan-Mori / Berlekamp-Massey") <algo-poly-bostan-mori>
 
@@ -350,7 +399,9 @@ assert(bostan_mori(Poly(1), Poly({1, -1}), 1000000000000LL) == 1);
 
 === 模板引用
 
-#source_code(("poly/poly_core.hpp","poly/fps.hpp","poly/division_evaluation.hpp","poly/bostan_mori.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]、#ref(<algo-poly-fps>, supplement: none)、#ref(<algo-poly-division-evaluation>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/bostan_mori.hpp",))
 
 ==== #text("linear_recurrence")
 
@@ -359,7 +410,9 @@ using namespace poly998;
 assert(linear_recurrence_nth({0, 1}, {1, 1}, 10) == 55);
 ```
 
-#source_code(("poly/poly_core.hpp","poly/fps.hpp","poly/division_evaluation.hpp","poly/bostan_mori.hpp","poly/linear_recurrence.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]、#ref(<algo-poly-fps>, supplement: none)、#ref(<algo-poly-division-evaluation>, supplement: none)、#ref(<algo-poly-bostan-mori>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/linear_recurrence.hpp",))
 ==== #text("berlekamp_massey")
 
 ```cpp
@@ -368,7 +421,9 @@ assert(
     (berlekamp_massey({0, 1, 1, 2, 3, 5, 8, 13}) == vector<int>{1, 1}));
 ```
 
-#source_code(("poly/poly_core.hpp","poly/berlekamp_massey.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/berlekamp_massey.hpp",))
 
 == #text("多项式复合 / 拉格朗日反演") <algo-poly-composition>
 
@@ -415,7 +470,9 @@ assert(f.compose_slow(g, 10) == Poly({0, 1}));
 
 === 模板引用
 
-#source_code(("poly/poly_core.hpp","poly/fps.hpp","poly/composition.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]、#ref(<algo-poly-fps>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/composition.hpp",))
 
 
 == #text("生成函数 OGF / EGF") <algo-poly-ogf>
@@ -448,7 +505,9 @@ assert(ogf_from_sequence({1, 2, 3}) == Poly({1, 2, 3}));
 
 === 模板引用
 
-#source_code(("poly/poly_core.hpp","poly/ogf.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/ogf.hpp",))
 
 ==== #text("egf")
 
@@ -457,7 +516,9 @@ using namespace poly998;
 assert(egf_from_sequence({1, 2, 6}) == Poly({1, 2, 3}));
 ```
 
-#source_code(("poly/poly_core.hpp","poly/egf.hpp",))
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-core>)[Poly 核心]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("poly/egf.hpp",))
 
 == #text("多项式多点求值") <algo-poly-multipoint>
 
@@ -484,7 +545,22 @@ assert(egf_from_sequence({1, 2, 6}) == Poly({1, 2, 3}));
 
 === 接口、下标与适用边界补充
 
-#text("此版使用全局 Poly=vector<int>，与 poly998::Poly 为不同实现，保留为独立选择。系数须已归一化到 [0,MOD)，点坐标构造时归一化；查询可重复。多项式除数非空且最高项非零，NTT 长度 <=2^23。")
+#text("此版使用全局 Poly=vector<int>，与 poly998::Poly 为不同实现，保留为独立选择；只依赖章首 NTT 与 vector 运算。系数须已归一化到 [0,MOD)，点坐标构造时归一化；查询可重复。多项式除数非空且最高项非零，NTT 长度 <=2^23。")
+
+=== vector 公共接口最小调用
+
+```cpp
+Poly a{1, 2, 3};
+auto iv = polyInv(a, 4);
+auto one = mul(a, iv);
+one.resize(4);
+assert((one == Poly{1, 0, 0, 0}));
+assert((polyMod(a, Poly{1, 1}) == Poly{2}));
+```
+
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]；各依赖只复制一次。
+
+#source_code(("poly/vector_core.hpp",), shared: <shared-poly-vector>)
 
 === 最小调用示例
 
@@ -494,6 +570,8 @@ assert((t.eval(Poly{1, 2, 3}) == vector<int>{1, 6, 17}));
 ```
 
 === 模板引用
+
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-vector>)[vector 运算]；各依赖只复制一次。
 
 #source_code(("poly/multipoint.hpp",))
 
@@ -523,7 +601,7 @@ assert((t.eval(Poly{1, 2, 3}) == vector<int>{1, 6, 17}));
 
 === 接口、下标与适用边界补充
 
-#text("保留原独立 ProductTree 实现，不与 ")#ref(<algo-poly-division-evaluation>, supplement: none)#text(" 合并。x / y 等长且 x 模 MOD 互异；y 已补上负数归一化，重复点断言拒绝。空输入返回空数组。中间 NTT 长度 <=2^23。")
+#text("保留原独立 ProductTree 实现，共用章首 NTT 与 vector 运算，不与 ")#ref(<algo-poly-division-evaluation>, supplement: none)#text(" 合并。x / y 等长且 x 模 MOD 互异；y 已补上负数归一化，重复点断言拒绝。空输入返回空数组。中间 NTT 长度 <=2^23。")
 
 === 最小调用示例
 
@@ -532,6 +610,8 @@ assert((fastInterpolation({0, 1, 2}, {1, 6, 17}) == Poly{1, 2, 3}));
 ```
 
 === 模板引用
+
+*代码依赖：* 先复制 #link(<shared-poly-ntt>)[轻量 NTT]、#link(<shared-poly-vector>)[vector 运算]；各依赖只复制一次。
 
 #source_code(("poly/fast_interpolation.hpp",))
 

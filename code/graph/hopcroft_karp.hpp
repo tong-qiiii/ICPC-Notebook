@@ -86,6 +86,33 @@ struct HopcroftKarp
         return false;
     }
 
+    // 先 work() 求最大匹配；返回最小点覆盖，补集即最大独立集。
+    pair<vector<int>, vector<int>> cover() const
+    {
+        vector<char> l(nL + 1), r(nR + 1);
+        queue<int> q;
+        for (int u = 1; u <= nL; u++)
+        {
+            if (!matchL[u]) l[u] = true, q.push(u);
+        }
+        while (!q.empty())
+        {
+            int u = q.front();
+            q.pop();
+            for (int v : g[u])
+            {
+                if (matchL[u] == v || r[v]) continue;
+                r[v] = true;
+                int w = matchR[v];
+                if (w && !l[w]) l[w] = true, q.push(w);
+            }
+        }
+        vector<int> a, b;
+        for (int u = 1; u <= nL; u++) if (!l[u]) a.push_back(u);
+        for (int v = 1; v <= nR; v++) if (r[v]) b.push_back(v);
+        return {a, b};
+    }
+
     int work()
     {
         fill(matchL.begin(), matchL.end(), 0);

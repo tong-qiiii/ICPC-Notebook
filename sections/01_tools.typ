@@ -306,34 +306,82 @@ assert(abs(best_pos + 3) < 1e-6);
 
 #raw(read("../code/basic/ternary_search_real.hpp"), lang: "cpp", block: true)
 
-== 对拍 <algo-basic-stress>
+== Linux 编译与调试脚本 <algo-basic-linux-run-debug>
 
-*用途：* 生成数据，依次运行正解与暴力，比较输出并保留反例；属于本地工具，不随题目提交。
-*形式：* 函数式，三个命令及轮数作为参数；不为简单顺序流程增加配置 `struct`。
+*用途：* Ubuntu 线下赛编译并运行单个 C++17 程序；正常版观察结果，调试版辅助定位内存越界、未定义行为和 STL 容器误用。仅为本地工具，不随题目提交。
+*形式：* 两个短 Bash 脚本，分别保存为无后缀文件 `run`、`debug`；源码保存在 `code/basic/`，比赛时直接复制下方代码。
 
 === 接口、复杂度与约定
 
-- `stress(generator, solution, brute, rounds = 0)`：有限轮全部通过返回 `true`；发现 WA 或命令失败返回 `false`。`rounds = 0` 持续运行。
-- `same_output(a, b)` 比较 token，忽略空白差异；文件缺失或读入错误返回 `false`。
-- 每轮时间为生成器、正解、暴力的运行时间加输出比较 `O(输出长度)`；比较额外空间 `O(最长 token 长度)`。
-- 无数组下标；轮号从 `1` 开始，每次调用重新计数。
-- 在独立工作目录中运行，会覆盖 `data.in`、`sol.out`、`brute.out`；失败后立即返回，保留当前文件。
-- 默认命令 `./gen`、`./sol`、`./brute` 适用于 POSIX Shell；Windows 传入当地可执行命令，例如 `gen.exe`。
-- 命令由 `system()` 执行，带空格路径需按所用 Shell 引号规则传入。没有内置超时，程序卡住时需外部中止。
-- 比较的是字符串 token，`1` 与 `1.0` 不相等；浮点误差或 Special Judge 需替换比较函数。
-- 重复调用会重用并覆盖文件；随机生成器需变化种子，固定种子每轮相同会削弱对拍价值。
+- 在题目目录运行 `./run a` 或 `./debug a`，编译 `a.cpp` 为 `a`，读入 `a.in`，将标准输出写入 `a.out`。参数是不带 `.cpp` 的当前目录文件名；含空格时加引号，不传绝对路径。无数组下标或初始化状态。
+- 需要 Bash、GCC 与对应的 libstdc++ / sanitizer 运行库。脚本本身不增加算法复杂度；总耗时由编译与程序执行决定。`time` 显示的是程序运行耗时，仅供当次观察，不做性能回归。
+- `run` 使用 `-O2`，开启 `-Wall -Wextra -Wshadow`；编译成功才运行。调试信息、报错和计时保留在终端的 stderr，结果文件只接收程序 stdout。
+- `debug` 使用 `-Og -g`、ASan / UBSan、`_GLIBCXX_DEBUG` 与帧指针；UBSan 检出错误后停止。调试版内存和耗时明显增加，不能据此直接判断比赛时限或内存限制。
+- `ulimit -s 262144` 尝试把当前脚本及其子进程的栈限制设为 256 MiB；不能突破系统硬限制，也不改变评测机限制。若该命令报错，原脚本仍会继续编译，须检查环境实际限制。
+- 保持 UTF-8 / LF 换行；Windows 检出由 `.gitattributes` 固定 LF。复制到 Linux 后执行一次 chmod；也可直接 `bash run a` / `bash debug a`，无需执行位。
+
+=== 调用方式
+
+```bash
+# 当前目录已有 run、debug、a.cpp、a.in
+chmod +x run debug
+./run a
+cat a.out
+./debug a
+# 文件名带空格：./run "case one"
+```
+
+=== 正常编译：保存为 run
+
+#raw(read("../code/basic/run"), lang: "bash", block: true)
+
+=== 调试检查：保存为 debug
+
+#raw(read("../code/basic/debug"), lang: "bash", block: true)
+
+=== 注意事项与现场记忆
+
+会覆盖同名可执行文件和输出；两版共用同一个文件名。题目名不要取 `run` 或 `debug`，以免覆盖脚本。`&&` 保证编译失败时不运行旧程序，但旧 `a.out` 可能仍存在，先看命令退出状态；缺少 `a.in` 会报错，不会退回键盘输入。运行失败时输出可能不完整。每次运行重新编译，无缓存。
+
+先准备 `.in`，正常跑用 run，找 RE / 越界用 debug；读 `.out` 看答案，读终端看报错。检查器不能发现所有逻辑错误，边界样例与正确性对拍仍需保留。原编译参数和环境变量照录，长命令只增加 Shell 续行。
+
+参数说明参考 #link("https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html")[GCC sanitizer 文档]、#link("https://gcc.gnu.org/onlinedocs/libstdc++/manual/debug_mode_using.html")[libstdc++ 调试模式]。
+
+== 对拍 <algo-basic-stress>
+
+*用途：* Ubuntu 线下赛快速对拍；生成数据 → 正解 → 暴力 → diff，发现错误后保留反例。仅为本地工具，不随题目提交。
+*形式：* 一个短函数，默认直接 `stress()`；无需比较器、配置结构体或其他脚本。
+
+=== 接口、复杂度与约定
+
+- `stress(gen="./gen",sol="./sol",brute="./brute",rounds=0)`；默认一直跑，指定轮数全部通过返回 `true`，任一进程失败或输出不同返回 `false`。
+- 每轮执行 `./gen 轮号 > data.in`，轮号从 1 开始。生成器在 `int main(int argc,char** argv)` 中先执行 `rng.seed(std::stoull(argv[1]));`，之后用 `rnd` 造数据；随机源见 #ref(<algo-basic-rng>, supplement: [算法])。不读取种子参数就无法按轮号复现。
+- 每轮时间为三个程序及 diff 的耗时；额外内存由 diff 决定，驱动本身不读入整个输出。没有数组下标或跨轮缓存，每次调用重新从种子 1 开始。
+- Ubuntu 需要 GCC、Shell 和 `diff`；默认命令无 `.exe` 后缀。可直接将本节源码复制到 `stress.cpp`，补一个 main 调用。
+- `diff -bB` 忽略空白数量变化、行尾空白和空行；保留非空行的行结构，也不会把 `1 2` 与 `12` 当成相同输出。正解与暴力应使用一致的分行格式；浮点误差、无序答案或 SPJ 另写检查器。
+- 在单独目录运行，会覆盖 `data.in`、`sol.out`、`brute.out`。失败打印 `FAIL seed=轮号` 并立即停下；生成器失败时 `data.in` 可能只是部分输出，应先排查 RE。
+- 命令通过 `system()` 执行，无内置超时；死循环用 Ctrl+C 中止，必要时将命令改为 `timeout 2s ./sol`。改名或带空格路径时按 Shell 规则调整命令。
 
 === 调用方式
 
 ```cpp
-stress("./gen", "./sol", "./brute", 1000);
-// Windows 示例：stress("gen.exe", "sol.exe", "brute.exe", 1000);
+stress();
+// 只跑 1000 组：stress("./gen", "./sol", "./brute", 1000);
 ```
+
+```bash
+g++ -std=c++17 -O2 gen.cpp -o gen
+g++ -std=c++17 -O2 sol.cpp -o sol
+g++ -std=c++17 -O2 brute.cpp -o brute
+g++ -std=c++17 -O2 stress.cpp -o stress
+./stress
+```
+
+若提示 `FAIL seed=37`，保存现有 `data.in`；按 `./gen 37 > replay.in` 重造同一组，再运行 `./sol < replay.in` 和 `./brute < replay.in`。相同生成器、编译环境和种子才能保证完整生成过程复现。
 
 === 现场记忆
 
-造数据 → 正解 → 暴力 → 比较。先看进程退出码，再判 WA。
-发现反例立即停，不覆盖 `data.in`；token 比较不等于浮点或 SPJ 比较。
+三个程序先编译；gen 用 argv 种子；失败看 `data.in`、`sol.out`、`brute.out`。diff 缺失、程序 RE 都是失败，不能继续当 AC。
 
 === 模板引用
 
@@ -384,17 +432,17 @@ std::cout << x << '\n';
 - `rnd(l, r)` 在闭区间 `[l, r]` 内生成 `long long`；必须满足 `l <= r`。
 - 单次生成期望时间 `O(1)`；引擎固定空间 `O(1)`，内部保存固定大小状态。`shuffle` 时间 `O(n)`。
 - `rnd` 无下标；数组打乱不改变原有下标基准。允许 `l = r`、负区间和完整 `long long` 范围。
-- 引擎在首次初始化时混合时钟与静态对象地址，避免原模板 `new char` 泄漏；仅为比赛随机化，不用于密码学。
-- `rng.seed(seed)` 可重置为可复现序列；通常每个进程播种一次，不要每次 `rnd` 都播种。
+- 引擎用 `steady_clock` 播种，不依赖 Windows API、对象地址或堆分配。`<random>`、`<chrono>` 及 C++17 inline 变量均可用于 Ubuntu 的 GCC；只需 `g++ -std=c++17`，无需额外链接库。仅为比赛随机化，不用于密码学。
+- `rng.seed(seed)` 可重置序列；对拍生成器用 argv 传入的种子替代时钟。通常每个进程播种一次，不要每次 `rnd` 都播种。引擎序列固定，但 `uniform_int_distribution` 和 `shuffle` 的映射不保证跨标准库实现完全相同；复现请保持同一环境。
 - 多次调用推进同一个引擎状态。`rng` 为 C++17 inline 变量，多翻译单元共享同一对象。
 
 === 调用方式
 
 ```cpp
+rng.seed(123456);  // 调试复现时固定种子，放在生成数据之前
 long long x = rnd(-100, 100);
 std::vector<int> a{1, 2, 3};
-std::shuffle(a.begin(), a.end(), rng);  // 另包含 <algorithm>、<vector>
-rng.seed(123456);  // 调试复现时使用固定种子
+std::shuffle(a.begin(), a.end(), rng);
 ```
 
 === 现场记忆
@@ -444,34 +492,31 @@ pair_map[{1, 2}] = 3;
 
 == Debug 宏 <algo-basic-debug>
 
-*用途：* 本地输出变量、pair 和常用容器；提交模式删除调试调用。
-*形式：* 宏配合重载函数，打印由类型决定；不需要保存状态，不使用 `struct`。
+*用途：* 快速打印一个变量的名字和值，不维护容器打印框架。
+*形式：* 一行 `#define debug(x)`，直接输出到 `cerr`；不需要 `-DLOCAL`。
 
 === 接口、复杂度与约定
 
-- 本地编译加 `-DLOCAL`，使用 `debug(x, y, ...)`，输出到 `cerr`，不污染标准答案输出。
-- 支持可流输出的标量、pair、vector、set、map、unordered_set、unordered_map，支持这些类型的嵌套组合。
-- 本地时间 `O(实际打印内容长度)`，递归空间 `O(嵌套深度)`；非 LOCAL 时调用时间、额外空间均为 `O(1)`，不计算参数。
-- 容器遍历遵循原容器顺序，vector 从 `0` 开始；无序容器的打印顺序不固定。
-- 无初始化状态，重复调用无缓存；空参数调用输出空标签与换行。
-- 宏采用 `do ... while(false)`，可以安全放入无花括号的 `if/else`。
-- 不要在参数中依赖副作用；`debug(++x)` 在提交模式不会递增。含逗号的模板表达式需先存变量或加括号。
-- 本地不支持的自定义类型需自行补打印重载；打印 `i128` 时先包含 `int128_io.hpp`，再包含 `debug.hpp`，确保重载在模板定义时可见。
+- `debug(x)` 输出 `表达式: 值` 并换行，支持可直接用 `cerr << x` 输出的数值、字符串等。vector、pair 等自行遍历或分别打印成员。
+- 时间为输出内容长度，宏本身额外空间 `O(1)`；无初始化、缓存或数组下标。
+- 整个宏是带括号的表达式，可用于无花括号的 `if/else`。参数只求值一次，但调试时仍不要依赖副作用。
+- 不区分本地 / 提交模式；提交前删除调试调用，或将定义改为 `#define debug(x) ((void)0)`。关闭后参数不求值。
+- 文件中的 `#undef debug` 只为兼容个人基础模板里已有的同名宏；现场可直接保留这一行新的 define。打印 i128 时需先提供其流输出重载。
 
 === 调用方式
 
 ```cpp
-std::vector<std::vector<int>> dp{{1, 2}, {3}};
-std::map<int, std::vector<int>> groups{{1, {2, 3}}};
-debug(dp, groups);
-if (dp.empty()) debug("empty");
-else debug(dp.size());
+int n = 5;
+long long ans = 42;
+debug(n);
+debug(ans);
+if (n == 0) debug("empty");
+else debug(n + 1);
 ```
 
 === 现场记忆
 
-本地 `-DLOCAL`，提交不加；只写 `cerr`。
-嵌套容器的重载先声明再递归定义；调试参数不依赖副作用。
+`#x` 打印名字，`(x)` 打印值；只收一个参数，提交前关闭或删除。
 
 === 模板引用
 

@@ -20,6 +20,12 @@
         "templates": [
           "code/data_structure/zkw_segment_tree_lazy.hpp"
         ]
+      },
+      {
+        "heading": "树状数组：区间加与区间和",
+        "templates": [
+          "code/data_structure/fenwick_range.hpp"
+        ]
       }
     ],
     "raw": "raw/04_data_structure.md",
@@ -425,6 +431,38 @@
           "code/math/mod_sqrt.hpp"
         ]
       }
+    ],
+    "additions": [
+      {
+        "heading": "公平组合游戏：Nim 与 SG",
+        "templates": [
+          "code/math/game_sg.hpp"
+        ]
+      },
+      {
+        "heading": "异或高斯消元：bitset",
+        "templates": [
+          "code/math/gauss_xor.hpp"
+        ]
+      },
+      {
+        "heading": "模素数行列式",
+        "templates": [
+          "code/math/determinant.hpp"
+        ]
+      },
+      {
+        "heading": "杜教筛：φ 与 μ 前缀和",
+        "templates": [
+          "code/math/dujiao.hpp"
+        ]
+      },
+      {
+        "heading": "扩展 Lucas：合数模组合数",
+        "templates": [
+          "code/math/ex_lucas.hpp"
+        ]
+      }
     ]
   },
   {
@@ -542,6 +580,14 @@
           "code/geometry/geometry_3d.hpp"
         ]
       }
+    ],
+    "additions": [
+      {
+        "heading": "扫描线：矩形面积并",
+        "templates": [
+          "code/geometry/rectangle_union.hpp"
+        ]
+      }
     ]
   },
   {
@@ -622,6 +668,20 @@
         "heading": "8.11 拉格朗日插值",
         "templates": [
           "code/poly/lagrange.hpp"
+        ]
+      }
+    ],
+    "additions": [
+      {
+        "heading": "轻量 NTT 公共底层（保留现有算法编号）",
+        "templates": [
+          "code/poly/ntt.hpp"
+        ]
+      },
+      {
+        "heading": "vector 多项式公共运算（保留现有独立变体）",
+        "templates": [
+          "code/poly/vector_core.hpp"
         ]
       }
     ]
@@ -825,6 +885,20 @@
           "code/dp/cdq_dominance.hpp"
         ]
       }
+    ],
+    "additions": [
+      {
+        "heading": "LIS：严格递增、非降与方案恢复",
+        "templates": [
+          "code/dp/lis.hpp"
+        ]
+      },
+      {
+        "heading": "树上背包：含根连通选点",
+        "templates": [
+          "code/dp/tree_knapsack.hpp"
+        ]
+      }
     ]
   },
   {
@@ -959,6 +1033,12 @@
         "heading": "有界整数解计数",
         "templates": [
           "code/counting/bounded_sum.hpp"
+        ]
+      },
+      {
+        "heading": "矩阵树定理与加权生成树",
+        "templates": [
+          "code/counting/matrix_tree.hpp"
         ]
       }
     ]

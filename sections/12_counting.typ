@@ -6,12 +6,7 @@
 
 *参考范围：* 阅读并参考了 #link("https://github.com/thedyingkai/XCPC-Template-by-thedyingkai_/tree/04355d0a0ac07913df2629fbfa6f12ef5eb6958e/组合计数")[thedyingkai 的组合计数目录] 及同版本的互质计数、Prüfer 说明，固定参考提交 `04355d0`。本章按当前 Notebook 规范重新组织推导与例子，新增代码自行实现，未引入参考仓库的排版、C++20 或发布脚本。一般组合恒等式另参照 #link("https://dlmf.nist.gov/26")[NIST DLMF 第 26 章]；欧拉变换参照 #link("https://oeis.org/wiki/Euler_transform")[OEIS 定义]。
 
-#let source_code(files) = {
-  let source = files.map(file => read("../code/" + file)
-    .replace(regex("(?m)^#pragma once\r?\n"), "")
-    .replace(regex("(?m)^#include \".*\"\r?\n"), "")).join("\n")
-  raw(source, lang: "cpp", block: true)
-}
+#import "../styles/source.typ": source_code
 
 == 计数原则：分类、分步、双射与重计数 <algo-counting-principles>
 
@@ -54,7 +49,7 @@ $ binom(n, n_1, n_2, dots, n_r)=n!/(product_i n_i!), quad sum_i n_i=n. $
 
 *推导提示：* `(1+x)^P≡1+x^P (mod P)` 给 Lucas；质数幂方法先分离估值与可逆部分，不能把 P 当作素数直接用阶乘逆。
 
-*例：* `C(5,2)=10≡0 (mod 5)`；`C(4,2)=6≡2 (mod 4)`，合数模不能用费马逆元。参考仓库的任意模实现需按质数幂开表，本项目目前没有此独立模板；这里仅列公式与实现路线，不把它标为已提供代码。
+*例：* `C(5,2)=10≡0 (mod 5)`；`C(4,2)=6≡2 (mod 4)`，合数模不能用费马逆元。参考仓库的任意模实现需按质数幂开表，具体可复制实现见 #ref(<algo-math-ex-lucas>, supplement: none)，大质数幂的开表成本仍需评估。
 
 *现场记忆：* 参数大不一定要 Lucas；先看模数是不是质数，再看预处理范围。
 
@@ -693,7 +688,7 @@ n>=2 的树数 `n^(n-2)`，固定根数相同，根也自由选时为 `n^(n-1)`�
 
 == 矩阵树定理与加权生成树 <algo-counting-matrix-tree>
 
-*用途：* 一般图的生成树计数；本节给公式、构造与消元约定，不宣称现有解方程接口直接返回 determinant。
+*用途：* 一般图的生成树计数；本节给公式、构造和直接调用接口，行列式复用 #ref(<algo-math-determinant>, supplement: none)。
 
 无向加权图的 Laplacian 为 `L_ii=Σ相邻边权`、`L_ij=-Σ(i,j)边权`。删除任意同一行列 r 后的余子式行列式为 `Σ生成树 ∏边权`；平行边累加，自环不参与生成树。
 
@@ -703,11 +698,26 @@ n>=2 的树数 `n^(n-2)`，固定根数相同，根也自由选时为 `n^(n-1)`�
 
 *例：* 三角形有 3 棵生成树；两点间平行边权为 2、3，总权为 5。断图余子式为 0，单点空行列式按 1。
 
-*实现与复杂度：* 高斯求行列式 `O(n³)`、空间 `O(n²)`，素数模时可复用 #ref(<algo-math-gauss-mod>, supplement: [消元思路])；合数模不要对不可逆主元盲目求逆，可用整数消元 / CRT 等路线。没有新增或复制一份图论源码。
+*实现与复杂度：* 高斯求行列式 `O(n³)`、空间 `O(n²)`，素数模时可复用 #ref(<algo-math-gauss-mod>, supplement: [消元思路])；合数模不要对不可逆主元盲目求逆，可用整数消元 / CRT 等路线。以下实现只负责 Laplacian 与余子式构造，复用数学章行列式，不重复展示消元代码。
 
 参考：#link("https://ocw.mit.edu/courses/18-212-algebraic-combinatorics-spring-2019/resources/mit18_212s19_lec26/")[MIT Matrix Tree Theorem]。
 
 *现场记忆：* Laplacian 删同行列；有向树先查朝根还是离根。
+
+=== 接口与最小调用
+
+`tree_count(n,e,P,root=1,directed=false)` 返回生成树边权乘积之和模 P；节点 `1..n`，边为 `{u,v,w}`。P 必须为 int 范围质数；有向模式计朝 root 汇集的内向树。重边累加，自环忽略，单点为 1，多测无外部状态。
+
+```cpp
+vector<tuple<int, int, ll>> e = {{1, 2, 1}, {2, 3, 1}, {1, 3, 1}};
+assert(tree_count(3, e, 101) == 3);
+assert(tree_count(2, {{1, 2, 7}}, 101, 2, true) == 7);
+assert(tree_count(2, {{1, 2, 7}}, 101, 1, true) == 0);
+```
+
+*代码依赖：* #ref(<algo-math-determinant>, supplement: none)。先复制 det_mod。
+
+#source_code(("counting/matrix_tree.hpp",))
 
 == LGV：不相交路径与行列式 <algo-counting-lgv>
 

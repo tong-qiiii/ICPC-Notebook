@@ -1,15 +1,17 @@
 = 概率与期望 <chapter-probability>
 
-本章是原始十章以外新增的专题。先确定随机变量、停止条件和输出数域，再选模型；不是看到“随机”就直接套期望 DP。实数版默认 `db=double`，需要更高精度时评估运算全过程；模数版用数学章的 `Mint`。模板独立可复制，所有状态在调用内初始化。
+本章是原始十章以外新增的专题。先确定随机变量、停止条件和输出数域，再选模型；不是看到“随机”就直接套期望 DP。实数版默认 `db=double`，需要更高精度时评估运算全过程；模数版用数学章的 `Mint`。模板按依赖链接与自身实现组合复制，所有状态在调用内初始化。
 
 *模型速查：* 只计成功个数 → 伯努利概率 DP；固定步数 → 正向分布；无环 / 只有自环 → 逆拓扑期望；多状态成环 → 吸收方程；一维相邻游走 → 三对角；无权树走向固定目标 → 子树大小；收集齐 → 几何等待 / 子集；随机停止长度 → 尾和；连续成功段的高次得分 → 维护末尾长度的低阶矩。
 
-#let source_code(files) = {
-  let source = files.map(file => read("../code/" + file)
-    .replace(regex("(?m)^#pragma once\r?\n"), "")
-    .replace(regex("(?m)^#include \".*\"\r?\n"), "")).join("\n")
-  raw(source, lang: "cpp", block: true)
-}
+#import "../styles/source.typ": source_code
+
+
+=== 公共代码与复制顺序
+
+本章源码块仅展示算法自身实现；公共骨架只打印一次。按依赖链接复制所需的公共代码，再复制本算法与调用示例，比赛时不需要仓库头文件。已有基础算法被复用时，直接复制其原条目，不在每个代码块里重贴。
+
+*依赖索引：* #ref(<algo-math-gauss-double>, supplement: none)、#link(<shared-math-modint>)[Mint 模整数骨架]。
 
 == 概率基础：条件、独立与全概率 <algo-probability-basics>
 
@@ -88,7 +90,7 @@ assert(abs(hyper_pmf(4, 2, 2, 1) - 2.0 / 3) < 1e-12);
 
 *例题：* 自拟“10 次独立抛币恰好 6 次正面”用二项；“52 张牌不放回抽 5 张，恰有 2 张红桃”用超几何；抽样是否放回决定能否使用二项。
 
-*注意事项：* 用对数计算避免阶乘先溢出，但极小概率仍可能下溢为零，巨大参数下 `lgamma` 相减有消减误差；不保证所有 int 规模都有高相对精度。求一整个 PMF 时优先递推 / DP，而不是反复调用对数公式。需要随机采样时可选标准库 `bernoulli_distribution / binomial_distribution / geometric_distribution / poisson_distribution`；其中标准库几何分布计的是失败次数。
+*注意事项：* 用对数计算避免阶乘先溢出，但极小概率仍可能下溢为零，巨大参数下 `lgamma` 相减有消减误差；不保证所有 int 规模都有高相对精度。求一整个 PMF 时优先递推 / DP，而不是反复调用对数公式。需要随机采样时可选标准库 `bernoulli_distribution`、`binomial_distribution`、`geometric_distribution`、`poisson_distribution`；其中标准库几何分布计的是失败次数。
 
 === 现场记忆
 
@@ -291,7 +293,9 @@ assert(isinf(ans.mean[1]) && ans.mean[2] == 0);
 
 === 模板引用
 
-#source_code(("math/gauss_double.hpp", "probability/markov_absorb.hpp"))
+*代码依赖：* 先复制 #ref(<algo-math-gauss-double>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("probability/markov_absorb.hpp",))
 
 == 一维随机游走与赌徒破产 <algo-probability-walk-line>
 
@@ -481,4 +485,6 @@ assert(dp[3].v == 229596204);
 
 === 模板引用
 
-#source_code(("math/modint.hpp", "probability/damage_expect.hpp"))
+*代码依赖：* 先复制 #link(<shared-math-modint>)[Mint 模整数骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("probability/damage_expect.hpp",))

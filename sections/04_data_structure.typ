@@ -4,12 +4,14 @@
 
 #text("统一约定：输入规模、节点号、版本号和查询区间须合法；空区间仅在接口明确支持时使用。递归实现需评估栈空间；整数中间值及累计值必须在对应类型范围内。多测重新调用 init / build / clear，普通函数的外部维护状态由调用者清空。各模板独立选用，同名 Info / Tag / Seg / Query 不应同时粘贴。")
 
-#let source_code(files) = {
-  let source = files.map(file => read("../code/" + file)
-    .replace(regex("(?m)^#pragma once\r?\n"), "")
-    .replace(regex("(?m)^#include \".*\"\r?\n"), "")).join("\n")
-  raw(source, lang: "cpp", block: true)
-}
+#import "../styles/source.typ": source_code
+
+
+=== 公共代码与复制顺序
+
+本章源码块仅展示算法自身实现；公共骨架只打印一次。按依赖链接复制所需的公共代码，再复制本算法与调用示例，比赛时不需要仓库头文件。已有基础算法被复用时，直接复制其原条目，不在每个代码块里重贴。
+
+*依赖索引：* #ref(<algo-data-structure-mo-rollback-add>, supplement: none)。
 
 == #text("单调队列：滑动窗口最小值 / 最大值") <algo-data-structure-sliding-window>
 
@@ -219,6 +221,34 @@ assert(fw.kth(2) == 2 && fw.kth(3) == 5);
 
 #source_code(("data_structure/fenwick_kth.hpp",))
 
+
+== 树状数组：区间加与区间和 <algo-data-structure-fenwick-range>
+
+*用途：* 两棵 Fenwick 维护差分，支持区间加、单点查询和区间和；只需要区间加单点查时可以只保留差分树 t。
+
+*复杂度：* 初始化 `O(n)`，修改和查询 `O(log n)`，空间 `O(n)`。
+
+*下标与接口：* `1..n`，`BITRange b(n)` 初始全 0；`add(l,r,v)` 为闭区间加，`sum(p)` 返回前 p 项和，允许 p=0；`query(l,r)` 返回区间和，单点用 `query(p,p)`。`init(n)` 清空两棵树。
+
+*注意事项：* 不支持区间赋值；输入非零数组可逐点 add，构建耗时 `O(n log n)`。差分取负、树内累计、`v*(p-1)`、前缀和乘法以及相减的中间值都必须在 ll 内；不能传 0 作为修改左端点。
+
+*现场记忆：* 差分 d 的前缀为 a；前缀和是 `p*Σd[i] - Σ(i-1)*d[i]`。在 l 加 v、r+1 减 v；r=n 时末端自然不入树。
+
+=== 最小调用示例
+
+```cpp
+BITRange b(5);
+b.add(2, 5, 3);
+b.add(3, 3, -1);
+assert(b.query(1, 5) == 11);
+assert(b.query(3, 3) == 2);
+b.init(2);
+assert(b.sum(2) == 0);
+```
+
+=== 模板引用
+
+#source_code(("data_structure/fenwick_range.hpp",))
 
 == #text("线性基") <algo-data-structure-linear-basis>
 
@@ -441,7 +471,9 @@ assert(mo_max_span(vector<int>{0, 1, 2, 1}, vector<Query>{{1, 3, 0}},
                    3)[0] == 2);
 ```
 
-#source_code(("data_structure/mo_rollback_add.hpp","data_structure/mo_max_span.hpp",))
+*代码依赖：* 先复制 #ref(<algo-data-structure-mo-rollback-add>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("data_structure/mo_max_span.hpp",))
 
 == #text("只删回滚莫队") <algo-data-structure-mo-rollback-delete>
 

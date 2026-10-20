@@ -5,9 +5,6 @@ using namespace std;
 #define ll long long
 #endif
 
-#include <bits/stdc++.h>
-using namespace std;
-
 using i64 = long long;
 using i128 = __int128_t;
 #ifndef db
@@ -136,22 +133,12 @@ inline db cross(PointD a, PointD b, PointD c)
     return cross(b - a, c - a);
 }
 
-inline i128 len2(PointI a)
+template <class T> auto len2(Point<T> a)
 {
     return dot(a, a);
 }
 
-inline db len2(PointD a)
-{
-    return dot(a, a);
-}
-
-inline i128 norm(PointI a)
-{
-    return len2(a);
-}
-
-inline db norm(PointD a)
+template <class T> auto norm(Point<T> a)
 {
     return len2(a);
 }
@@ -193,6 +180,11 @@ template <class T> Point<T> perp(Point<T> a)
     return {-a.y, a.x};
 }
 
+template <class T> bool same_point(Point<T> a, Point<T> b)
+{
+    return a == b;
+}
+
 inline bool same_point(PointD a, PointD b)
 {
     return sgn(a.x - b.x) == 0 && sgn(a.y - b.y) == 0;
@@ -216,12 +208,7 @@ inline db angle(PointD a, PointD b)
     return atan2(fabs(cross(a, b)), dot(a, b));
 }
 
-inline int orient(PointI a, PointI b, PointI c)
-{
-    return sgn(cross(a, b, c));
-}
-
-inline int orient(PointD a, PointD b, PointD c)
+template <class T> auto orient(Point<T> a, Point<T> b, Point<T> c)
 {
     return sgn(cross(a, b, c));
 }

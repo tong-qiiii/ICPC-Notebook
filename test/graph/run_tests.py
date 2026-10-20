@@ -4,7 +4,11 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from notebook_sources import audit, examples as copied_examples
 
 
 def run(command, cwd):
@@ -26,22 +30,9 @@ def main():
     headers = sorted(directory.glob("*.hpp"))
     style = (root / "STYLE.md").read_text(encoding="utf-8")
     base = re.search(r"```cpp\n(.*?)\n```", style, re.DOTALL).group(1)
-    chapter = (root / "sections/02_graph.typ").read_text(encoding="utf-8")
-    chunks = re.split(r"(?m)^== ", chapter)[1:]
-    examples = []
-    for chunk in chunks:
-        match = re.search(r'\n#graph_code\("([^"]+)"(?:,\s*deps:\s*\((.*?)\))?\)', chunk)
-        example = re.search(r"```cpp\n(.*?)\n```", chunk, re.DOTALL)
-        if not match or not example:
-            raise RuntimeError("Missing calling example or source: " + chunk.splitlines()[0])
-        dependencies = re.findall(r'"([^"]+)"', match.group(2) or "")
-        actual = re.findall(r'(?m)^#include "([^"]+)"', (directory / match.group(1)).read_text(encoding="utf-8"))
-        if actual != dependencies:
-            raise RuntimeError("Typst must expand every local dependency: " + match.group(1))
-        source = "\n".join((directory / name).read_text(encoding="utf-8")
-                           for name in [*dependencies, match.group(1)])
-        source = re.sub(r'(?m)^#pragma once\n|^#include "[^"]+"\n', "", source)
-        examples.append((match.group(1), source, example.group(1)))
+    audit()
+    examples = [(Path(name).name, source, example) for name, source, example in
+                copied_examples([root / "sections/02_graph.typ"])]
     expected = {h.stem for h in headers}
     if {Path(name).stem for name, _, _ in examples} != expected or len(examples) != len(headers):
         raise RuntimeError("Chapter/header coverage is not one to one")
@@ -76,7 +67,7 @@ def main():
                 covered.update(re.findall(r"(?m)^PASS (\w+)$", output))
             if covered != expected:
                 raise RuntimeError("Runtime coverage mismatch: " + repr(expected - covered))
-        print("[PDF] compile and run all expanded templates/calling examples", flush=True)
+        print("[PDF] compile and run shared skeletons + algorithm + calling example", flush=True)
         for i, (name, source, example) in enumerate(examples, 1):
             program = work / "copied.cpp"
             program.write_text(base + "\n" + source + "\nint main()\n{\n"

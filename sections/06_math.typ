@@ -4,12 +4,20 @@
 
 #text("统一约定：输入规模、节点号、版本号和查询区间须合法；空区间仅在接口明确支持时使用。递归实现需评估栈空间；整数中间值及累计值必须在对应类型范围内。多测重新调用 init / build / clear，普通函数的外部维护状态由调用者清空。各模板独立选用，同名 Info / Tag / Seg / Query 不应同时粘贴。")
 
-#let source_code(files) = {
-  let source = files.map(file => read("../code/" + file)
-    .replace(regex("(?m)^#pragma once\r?\n"), "")
-    .replace(regex("(?m)^#include \".*\"\r?\n"), "")).join("\n")
-  raw(source, lang: "cpp", block: true)
-}
+#import "../styles/source.typ": source_code
+
+
+=== 公共代码与复制顺序
+
+本章源码块仅展示算法自身实现；公共骨架只打印一次。按依赖链接复制所需的公共代码，再复制本算法与调用示例，比赛时不需要仓库头文件。已有基础算法被复用时，直接复制其原条目，不在每个代码块里重贴。
+
+*依赖索引：* #ref(<algo-math-modint>, supplement: none)、#link(<shared-math-modint>)[Mint 模整数骨架]、#ref(<algo-math-miller-rabin>, supplement: none)。
+
+=== 公共骨架：Mint 模整数骨架 <shared-math-modint>
+
+完整代码只在此处展示一次；用途、接口和调用仍见 #ref(<algo-math-modint>, supplement: none)。
+
+#source_code(("math/modint.hpp",))
 
 == #text("ModInt / 快速幂 / 逆元 / 扩展欧几里得") <algo-math-modint>
 
@@ -52,7 +60,7 @@ assert((Z(-1) + 2).v == 1 && (Z(8) / 2).v == 4);
 
 === 模板引用
 
-#source_code(("math/modint.hpp",))
+#source_code(("math/modint.hpp",), shared: <shared-math-modint>)
 
 ==== #text("qpow")
 
@@ -76,7 +84,9 @@ assert(g == 6 && 30 * x + 18 * y == 6);
 assert(inv_mod(3, 7) == 5 && inv_mod(2, 6) == -1);
 ```
 
-#source_code(("math/extended_gcd.hpp","math/inverse_mod.hpp",))
+*代码依赖：* 先复制 #ref(<algo-math-modint>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("math/inverse_mod.hpp",))
 
 == #text("组合数预处理：阶乘 / 逆阶乘") <algo-math-combination>
 
@@ -123,7 +133,9 @@ assert(c.C(5, 2).v == 10 && c.A(5, 2).v == 20);
 
 === 模板引用
 
-#source_code(("math/modint.hpp","math/combination.hpp",))
+*代码依赖：* 先复制 #link(<shared-math-modint>)[Mint 模整数骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("math/combination.hpp",))
 
 
 == #text("Lucas 定理") <algo-math-lucas>
@@ -171,7 +183,9 @@ assert(l.C(10, 3).v == 1);
 
 === 模板引用
 
-#source_code(("math/modint.hpp","math/lucas.hpp",))
+*代码依赖：* 先复制 #link(<shared-math-modint>)[Mint 模整数骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("math/lucas.hpp",))
 
 
 == #text("整除分块") <algo-math-division-blocks>
@@ -321,6 +335,35 @@ assert(s.phi[10] == 4 && s.mu[6] == 1 && s.mu[4] == 0);
 #source_code(("math/multi_sieve.hpp",))
 
 
+== 杜教筛：φ 与 μ 前缀和 <algo-math-dujiao>
+
+*用途：* 在线性筛预处理范围外，利用整除同商段与记忆化递归计算 `Σφ(i)` 和 `Σμ(i)`，两者都含 i=1。
+
+*复杂度：* 对一个上界 N，筛到 B 后常用界为 `O(B + N/sqrt(B))`，B 取约 `N^(2/3)` 时为 `O(N^(2/3))`；不是任意小 B 都能达到该界。常用 B 至少在 sqrt(N) 量级，缓存空间约 `O(N/B)`，加上筛表 `O(B)`；任意多上界查询的缓存会继续增长。
+
+*接口与下标：* `DuJiao d(B)` / `init(B)`，B 至少取 1；`sum(n)` 返回 `{φ前缀, μ前缀}`，前者为 `__int128_t`，后者 ll。n=0 返回 `{0,0}`。`init` 重建筛表并清空缓存；同一对象重复查询复用结果。
+
+*推导：* `φ*1=id`，`μ*1=ε`，所以 `Sφ(n)=n(n+1)/2-Σ(l=2..n) Sφ(floor(n/l))`，`Sμ(n)=1-Σ(l=2..n) Sμ(floor(n/l))`；按相同商合并系数。
+
+*注意事项：* n 非负，GNU++17 使用 i128；不能把 φ 前缀强转 ll。大型 n 的 B、时间和缓存容量须按题目评估；递归深度 `O(log n)`，哈希复杂度为期望界。本模板分别测到 n=1e10 的恒等式，不宣称能处理 ll 全范围的规模。
+
+*现场记忆：* 先算卷积的容易前缀，减去 l>=2 的商值；别漏掉 μ(1)=φ(1)=1。
+
+=== 最小调用示例
+
+```cpp
+DuJiao d(1000);
+auto [p, m] = d.sum(10);
+assert(p == 32 && m == -1);
+assert(d.sum(0).first == 0);
+```
+
+=== 模板引用
+
+*代码依赖：* #ref(<algo-math-multi-sieve>, supplement: none)。先复制 MultiSieve。
+
+#source_code(("math/dujiao.hpp",))
+
 == #text("莫比乌斯反演：互质对数") <algo-math-mobius-pairs>
 
 #text("原稿来源：6.7 莫比乌斯反演：互质对数")
@@ -420,7 +463,9 @@ assert(A.pow(5)[0][0].v == 8);
 
 === 模板引用
 
-#source_code(("math/modint.hpp","math/matrix_power.hpp",))
+*代码依赖：* 先复制 #link(<shared-math-modint>)[Mint 模整数骨架]；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("math/matrix_power.hpp",))
 
 
 == #text("高斯消元：实数线性方程组") <algo-math-gauss-double>
@@ -527,8 +572,61 @@ assert(g.solve({{1, 1, 3}, {1, -1, 1}}, a) == 2 && a[0].v == 2 &&
 
 === 模板引用
 
-#source_code(("math/modint.hpp","math/gauss_mod.hpp",))
+*代码依赖：* 先复制 #link(<shared-math-modint>)[Mint 模整数骨架]；各依赖只复制一次，下方仅展示本节实现。
 
+#source_code(("math/gauss_mod.hpp",))
+
+
+== 异或高斯消元：bitset <algo-math-gauss-xor>
+
+*用途：* 模 2 的异或方程组；求可解性、系数矩阵秩和一个特解。适用于开关、灯阵、异或约束，区别于最大异或值线性基。
+
+*复杂度：* n 行、m 个变量、bitset 容量 B，时间上界 `O(n*m*ceil(B/w) + m*ceil(B/w))`，空间 `O(n*ceil(B/w)+m)`；w 为机器字长。适合 B 接近变量上限，不能随意给过大的 B。
+
+*下标与接口：* 变量 `0..m-1`，增广列是 m；`B>=m+1`。`gauss_xor<B>(a,m,ans)` 返回 -1 表示无解，否则返回秩 r，特解的自由变量取 0。解数为 `2^(m-r)`，大指数不能用 int 移位。传值消元保留输入，每次重置 ans。
+
+*注意事项：* 输入 B 内其他未用位应为 0；m=0 时检查常数矛盾。无解时 ans 清零，但不能把这个值当成有效解。bitset 的 B 是编译期常量；这里只返回特解，不返回完整零空间基。
+
+*现场记忆：* 行交换找主元，下面各行异或消元，逆序回代；常数位放 m，别误放到 B-1。
+
+=== 最小调用示例
+
+```cpp
+vector<bitset<65>> a(2);
+a[0][0] = a[0][1] = a[0][2] = 1;
+a[1][1] = 1;
+bitset<65> ans;
+assert(gauss_xor<65>(a, 2, ans) == 2);
+assert(ans[0] && !ans[1]);
+```
+
+=== 模板引用
+
+#source_code(("math/gauss_xor.hpp",))
+
+== 模素数行列式 <algo-math-determinant>
+
+*用途：* 方阵行列式；为矩阵树定理、LGV 等提供计算接口，不把解方程的秩当作行列式。
+
+*复杂度：* 时间 `O(n³ + n log P)`，空间 `O(n²)`；传值保留原矩阵。
+
+*下标与接口：* 0-index 方阵，`det_mod(a,P)` 返回 `0..P-1`，输入元素可为负。空矩阵行列式为 1，奇异矩阵为 0。P 必须为质数且 `2<=P<=INT_MAX`；使用 ll 乘法在这个范围内安全。
+
+*注意事项：* 换行时变号，主元乘到答案后才能归一或消去。本函数不适用于任意合数模，不在运行时验证素性；多测无全局状态。
+
+*现场记忆：* 累乘主元、交换变号、找不到主元返回 0；行列式、秩、方程解是不同接口。
+
+=== 最小调用示例
+
+```cpp
+assert(det_mod({{1, 2}, {3, 4}}, 101) == 99);
+assert(det_mod({}, 101) == 1);
+assert(det_mod({{1, 2}, {2, 4}}, 101) == 0);
+```
+
+=== 模板引用
+
+#source_code(("math/determinant.hpp",))
 
 == #text("容斥原理：子集枚举") <algo-math-subset-ie>
 
@@ -672,6 +770,34 @@ assert(
 #source_code(("math/crt.hpp",))
 
 
+== 扩展 Lucas：合数模组合数 <algo-math-ex-lucas>
+
+*用途：* 求大 n 的 `C(n,k) mod M`，M 可为合数。将 M 分解成互质质数幂，每一部分剥离 p 因子，算单位阶乘后 CRT 合并。
+
+*复杂度：* 初始化试除 `O(sqrt M)`，单位阶乘表时间、空间 `O(Σp^a)`；每次查询约 `O(Σ(log_p(n)*log n + log(p^a)))`。预处理代价取决于最大质数幂，不能因 n 大就忽略模数开表成本。
+
+*接口与下标：* `ExLucas c(M)` / `init(M)`，`C(n,k)` 使用 ll 参数；M 为正 int，`M=1`、`n<0` 或 k 不在 `0..n` 返回 0。重新 init 清空旧模数的表；反复查询同一模数直接复用对象。
+
+*注意事项：* 仅对剥离 p 后的互质部分求逆；p 的总指数保留并乘回。M 接近大质数时整表可能无法分配，本模板不承诺任意 int 模数都适合运行，赛前按 `Σp^a` 评估内存。不要套用质数阶乘逆元公式。
+
+*现场记忆：* 数 p 的次数、剥 p 的阶乘、单位求逆、补回 p 次幂，最后 CRT；指数达到幂次时该部分自然为 0。
+
+=== 最小调用示例
+
+```cpp
+ExLucas c(12);
+assert(c.C(6, 2) == 3);
+assert(c.C(1000000000000000000LL, 1) == 4);
+c.init(1);
+assert(c.C(0, 0) == 0);
+```
+
+=== 模板引用
+
+*代码依赖：* #ref(<algo-math-crt>, supplement: none)。先复制 CRT，包含 exgcd。
+
+#source_code(("math/ex_lucas.hpp",))
+
 == #text("Miller-Rabin 素性测试") <algo-math-miller-rabin>
 
 #text("原稿来源：6.14 Miller-Rabin 素性测试")
@@ -746,7 +872,9 @@ assert((f == vector<u64>{2, 2, 2, 3, 3, 5}));
 
 === 模板引用
 
-#source_code(("math/miller_rabin.hpp","math/pollard_rho.hpp",))
+*代码依赖：* 先复制 #ref(<algo-math-miller-rabin>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
+
+#source_code(("math/pollard_rho.hpp",))
 
 
 == #text("BSGS / exBSGS 离散对数") <algo-math-bsgs>
@@ -862,4 +990,32 @@ assert(modSqrt(3, 7) == -1);
 === 模板引用
 
 #source_code(("math/mod_sqrt.hpp",))
+
+== 公平组合游戏：Nim 与 SG <algo-math-game-sg>
+
+*用途：* 双方可用操作相同、确定性、无随机因素且有限结束的正常规则游戏。无路可走者输；多个互不影响的子游戏 SG 异或，非 0 为必胜。
+
+*接口、下标与复杂度：* `nim_move(a)` 接收 0-index 非负 ll 堆大小，返回 `{堆下标,操作后大小}`，无必胜步返回 `{-1,0}`；时间 `O(堆数)`。`sg_subtract(n,moves)` 给出石子数 `0..n` 的 SG，每次取 moves 中一个正数，时间 `O(n*|moves|)`，空间 `O(n+|moves|)`。`sg_dag(g)` 用 1-index 有向无环状态图，时间空间 `O(V+E)`，递归深度最长状态链。
+
+*模型与例：* 每次可取 1、2、3 个时，SG 为石子数模 4；两堆大小 1、2 的 Nim，异或为 3，将第二堆变成 1。SG 的 mex 是后继 SG 中最小未出现非负整数，最多等于后继个数。
+
+*反常 Nim：* 若改为取走最后一颗者输，忽略空堆后，有大于 1 的堆时仍按异或判断；全为 1 时奇数堆必败、偶数堆必胜。该结论不能直接推广为任意反常游戏的 SG 异或。空局面的胜负须与题面终止规则一致。
+
+*注意事项：* 本代码按正常规则求解，环、平局、双方操作不同和子游戏互相影响均不能直接套。所有状态局部初始化，可重复调用；空 moves 得到全 0，DAG 的终点为 0。深链需评估栈空间。
+
+*现场记忆：* 先判是否公平、正常、无环、子游戏独立，再 mex / xor；不是所有“轮流操作”都能异或。
+
+=== 最小调用示例
+
+```cpp
+auto [p, x] = nim_move({1, 2});
+assert(p == 1 && x == 1);
+assert(sg_subtract(10, {1, 2, 3})[10] == 2);
+vector<vector<int>> g = {{}, {2}, {}};
+assert(sg_dag(g)[1] == 1);
+```
+
+=== 模板引用
+
+#source_code(("math/game_sg.hpp",))
 
