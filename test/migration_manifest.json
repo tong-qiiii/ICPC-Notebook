@@ -950,6 +950,18 @@
         ]
       },
       {
+        "heading": "成功条件下的期望",
+        "templates": ["code/probability/markov_conditional.hpp"]
+      },
+      {
+        "heading": "随机串首次出现模式",
+        "templates": ["code/probability/pattern_wait.hpp"]
+      },
+      {
+        "heading": "最优操作期望",
+        "templates": ["code/probability/toward_zero.hpp"]
+      },
+      {
         "heading": "walk_line",
         "templates": [
           "code/probability/walk_line.hpp"
@@ -996,7 +1008,8 @@
       {
         "heading": "二项式反演",
         "templates": [
-          "code/counting/binomial_transform.hpp"
+          "code/counting/binomial_transform.hpp",
+          "code/counting/binomial_transform_fast.hpp"
         ]
       },
       {
@@ -1014,7 +1027,8 @@
       {
         "heading": "两类 Stirling 数",
         "templates": [
-          "code/counting/stirling.hpp"
+          "code/counting/stirling.hpp",
+          "code/counting/stirling_row.hpp"
         ]
       },
       {

@@ -11,7 +11,7 @@ template <int MOD> struct Comb
     using Z = Mint<MOD>;
 
     int n = 0;
-    vector<Z> fac, ifac;
+    vector<Z> fac{Z(1)}, ifac{Z(1)};
 
     Comb() = default;
 
@@ -22,6 +22,7 @@ template <int MOD> struct Comb
 
     void init(int n_)
     {
+        if (n_ < 0 || n_ >= MOD) throw invalid_argument("Comb requires 0 <= n < prime MOD");
         n = n_;
 
         fac.assign(n + 1, 1);
@@ -42,21 +43,23 @@ template <int MOD> struct Comb
 
     Z C(int N, int K) const
     {
-        if (N < 0 || K < 0 || K > N || N > n)
+        if (N < 0 || K < 0 || K > N)
         {
             return 0;
         }
 
+        if (N > n) throw out_of_range("Comb table too small; call init(N)");
         return fac[N] * ifac[K] * ifac[N - K];
     }
 
     Z A(int N, int K) const
     {
-        if (N < 0 || K < 0 || K > N || N > n)
+        if (N < 0 || K < 0 || K > N)
         {
             return 0;
         }
 
+        if (N > n) throw out_of_range("Comb table too small; call init(N)");
         return fac[N] * ifac[N - K];
     }
 };

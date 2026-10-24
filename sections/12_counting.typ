@@ -86,7 +86,7 @@ $ binom(n, n_1, n_2, dots, n_r)=n!/(product_i n_i!), quad sum_i n_i=n. $
 *用途：* 公式已推出之后选择正确数域与规模；复用数学章，不另写 Comb / Lucas / CRT。
 
 - 杨辉：`C(n,k)=C(n-1,k-1)+C(n-1,k)`，任意模数都可，滚动 `O(nk)` 时间、`O(k)` 空间。
-- 阶乘表：素数 P 且预处理上界 `<P`，见 #ref(<algo-math-combination>, supplement: [算法])。超表的现有 C 接口会返回 0；这是接口保护，不代表数学答案为 0。
+- 阶乘表：素数 P 且预处理上界 `<P`，见 #ref(<algo-math-combination>, supplement: [算法])。先推导所有组合数的最大上参数，再 init 到该值；合法 N 超表会抛异常，不能把未预处理误当成答案 0。非法 K 仍返回 0，默认表支持 C(0,0)=1。
 - Lucas：P 为质数，`C(n,k)≡∏C(n_i,k_i) (mod P)`，`n_i,k_i` 为 P 进制位；见 #ref(<algo-math-lucas>, supplement: [算法])。小位组合数仍需可承担的计算，不保证大 P 时便宜。
 - 质数幂 $p^a$：
 
@@ -293,6 +293,18 @@ $0^0$ 按空映射计数为 1。
 
 *现场记忆：* G 统计指定条件同时成立，E 才统计恰好；k=0 时别漏全集。
 
+=== 例题拆解：ABC172 E — NEQ
+
+#link("https://atcoder.jp/contests/abc172/tasks/abc172_e")[原题]：A、B 都从 1..m 选 n 个值组成无重复序列，每个位置要求 A_i≠B_i，求有序对数，模 $10^9+7$。
+
+*交集怎么数：* 先选 A，有 P(m,n) 种。以 A_i=B_i 为坏事件，指定 i 个坏位置后，B 的这些值已占用，剩余位置有 P(m−i,n−i) 种。因此
+$ G_i=P(m,n) binom(n,i) P(m-i,n-i). $
+答案是 $sum_(i=0)^n (-1)^i G_i$；问恰有 k 个相同位置，则对 G 做上三角逆变换。
+
+*简证与手算：* 一个恰有 t 个坏位置的对象在 G_i 出现 $binom(t,i)$ 次，交替符号和仅当 t=0 为 1。n=2,m=3 时 G=(36,24,6)，答案 18，完整恰好分布为 E=(18,12,6)。
+
+*调用提纲：* `Comb<1000000007> cb(m)`，逐 i 累加 `cb.A(m,n)*cb.C(n,i)*cb.A(m-i,n-i)` 的交替项；求完整 E 用 #ref(<algo-counting-binomial-inversion>, supplement: [上三角反演])。预处理 O(m)，只求无坏事件 O(n)，空间 O(m)。m≥n，表须覆盖 m。*记忆：* 指定坏位置强制用值，剩余 B 依旧互异。
+
 == 错排与常用计数序列 <algo-counting-count-sequences>
 
 *上手：* 错排只限制每个人不能拿到自己的物品；并不禁止两人互换。若允许恰好 k 人拿对，先选这 k 人，再让剩下的人全部错排。
@@ -377,7 +389,7 @@ C_0=1。也满足 `C_n=Σ(i=0..n-1) C_i C_(n-1-i)`。括号分解为“首对包
 
 === 接口与最小调用
 
-`Stirling<T> st(n)` / `st.init(n)`：下标 n,k 从 0 开始；`s1` 为无符号第一类，`s2` 为第二类。时间空间 `O(n²)`，n>=0；只需一类或一行时可现场裁剪为一维。无除法，可用于合数模环；重复 init 会清空旧表。
+`Stirling<T> st(n)` / `st.init(n)`：下标 n,k 从 0 开始；`s1` 为无符号第一类，`s2` 为第二类。时间空间 `O(n²)`，n>=0；两张 int 表 n=5000 已约 200 MB，ll 约 400 MB（另有容器开销）。只需一行用下方滚动版。无除法，可用于合数模环；重复 init 会清空旧表。
 
 ```cpp
 Stirling<long long> st(5);
@@ -396,6 +408,22 @@ $ k!S(n,k)=sum_(i=0)^k (-1)^(k-i)binom(k,i)i^n $
 *现场记忆：* 新块乘 k，新环插入乘 n-1；表 s1 没带符号。
 
 #source_code(("counting/stirling.hpp",))
+
+=== 同一递推的单行版 <detail-counting-stirling-row>
+
+`stirling_row<T>(n,k=-1,first=false)` 返回第 n 行 0..k 项；k=-1 为整行，first=true 为无符号第一类，否则第二类。时间 O(n(1+min(n,k)))、空间 O(k+1)，n≥0、0≤k≤n。无除法，可用合数模，整型须保证不溢出。
+
+*简证：* 与全表同样按“新块 / 放入旧块”或“新环 / 插入旧环”分类。j 倒序使 dp[j] 和 dp[j−1] 都是前一行；n>0 后 dp[0]=0。正序会让同一新元素被重复使用。
+
+```cpp
+assert((stirling_row<long long>(4) == vector<long long>{0, 1, 7, 6, 1}));
+assert((stirling_row<long long>(4, 2, true) == vector<long long>{0, 6, 11}));
+assert(stirling_row<long long>(0)[0] == 1);
+```
+
+*例题（自拟）：* 4 人分两个无名字小组为 7；两组有名字变成 14；4 元置换恰有两个循环为 11，用 first=true。*现场记忆：* 单行倒序滚动；两类系数是 j 与 i−1。
+
+#source_code(("counting/stirling_row.hpp",))
 
 == Stirling 反演与幂基底转换 <algo-counting-stirling-inversion>
 
@@ -598,6 +626,41 @@ assert(binom_transform(b, choose, true) == a);
 
 #source_code(("counting/binomial_transform.hpp",))
 
+=== 阶乘归一化：卷积二项式变换 <detail-counting-binomial-fast>
+
+*用途与接口：* `binom_fast(a,fac,ifac,conv,inv=false,upper=false)` 与上方通用版的两种方向和逆变换含义一致。下标 0..N−1；conv 必须返回 T 上的线性卷积，不能循环卷积。空输入返回空，表不足抛异常，重复调用无状态。时间 O(M(N)+N)，空间 O(N) 加卷积工作区；只有阶乘可逆时适用，合数模或普通整数不能硬套逆阶乘。
+
+*推导与简证：* 下三角正变换 $b_n=sum_(k=0)^n binom(n,k)a_k$，两边除 n! 得
+$ b_n/n!=sum_(k=0)^n (a_k/k!)1/(n-k)!. $
+因此卷积 a_k/k! 与 1/k!，再乘 n!。逆变换将核换成 $(-1)^k/k!$；两核的生成函数是 exp(z)、exp(−z)，乘积 1。上三角先把 k!a_k 翻转，做同核卷积，再翻回并除 k!，即恢复索引差 i−k。
+
+*调用示例：* 复用现有 NTT，Mint 与 int 系数在回调中转换，不复制第二份多项式底层。$N-1<998244353$，补齐的 NTT 长度需不超过 $2^23$；该限制是卷积长度，不只是原数组长度。
+
+```cpp
+using Z = Mint<998244353>;
+Comb<998244353> cb(3);
+auto conv = [](const vector<Z> &a, const vector<Z> &b)
+{
+    vector<int> u, v;
+    for (auto t : a) u.push_back(t.v);
+    for (auto t : b) v.push_back(t.v);
+    auto w = poly998::convolution(u, v);
+    return vector<Z>(w.begin(), w.end());
+};
+vector<Z> a{1, 2, 3};
+auto b = binom_fast(a, cb.fac, cb.ifac, conv);
+assert(b[0].v == 1 && b[1].v == 3 && b[2].v == 8);
+assert(binom_fast(b, cb.fac, cb.ifac, conv, true) == a);
+```
+
+*例题（自拟）：* 已知指定 k 元子集各有 a_k 种贡献，大小 n 的对象选出子集求总贡献，就是下三角正变换。a=(1,2,3) 得 b=(1,3,8)；若 G_i 是 i 个坏事件交集总数，要求恰好 k 个时使用 upper=true、inv=true，不能套下三角。
+
+*注意与现场记忆：* 下三角先除阶乘，上三角先乘并翻转；逆变换只让卷积核交替变号。无可逆阶乘时继续用上方 O(N²) 通用版。
+
+*代码依赖：* #link(<shared-math-modint>)[Mint]、#ref(<algo-math-combination>, supplement: none)、#link(<shared-poly-ntt>)[轻量 NTT]。
+
+#source_code(("counting/binomial_transform_fast.hpp",))
+
 == 子集与超集 Möbius 反演 <algo-counting-subset-inversion>
 
 *上手：* 状态是具体集合，而非集合大小。两位集合 {a,b} 的总量包含空集、{a}、{b} 和自身；恢复自身要减两个单元素总量，再加被重复减掉的空集。
@@ -717,6 +780,18 @@ $ sum_(d=1)^n mu(d)floor(n/d)^2=2sum_(i=1)^n phi(i)-1 $
 这里仍是有序对。
 
 *现场记忆：* 先数“全部可整除”，再恢复“恰好 gcd”；有序、不同下标、可重复不能混。
+
+=== 例题拆解：ABC162 E — Sum of gcd of Tuples
+
+#link("https://atcoder.jp/contests/abc162/tasks/abc162_e")[原题]：长 N 的有序元组，每项从 1..K 选，可重复，求所有元组 gcd 总和，模 $10^9+7$。
+
+*建模与简证：* F[d] 为每项都能被 d 整除的元组数，
+$ F[d]=floor(K/d)^N=sum_(j>=1, j d<=K)f[j d]. $
+gcd 恰为 jd 的对象都会被 F[d] 收进来，所以对 F 调用 `f=multiple_transform(F,true)`，恢复精确分布，再累加 `d*f[d]`。不能对它做约数前缀。
+
+*手算与调用：* N=2,K=3，F[1..3]=(9,1,1)，f=(7,1,1)，答案 12。F[0]=0 占位；用 Mint 快速幂构造 F，再调用 #ref(<algo-counting-mobius-inversion>, supplement: [倍数逆变换])。时间 O(K log N+K log K)、空间 O(K)。
+
+*注意与记忆：* “每项整除”不是“gcd 恰好”；元组有序且可重复。原题样例 N=3,K=2 给 9，不要与本节 N=2 的手算混用。
 
 == GCD / LCM 加权和与 Jordan 函数 <algo-counting-gcd-lcm-sums>
 
@@ -873,6 +948,18 @@ $ N(n,m)=1/n sum_(d ∣ n)phi(d)m^(n/d). $
 *调用与复杂度：* 枚举 n 的约数配快速幂，复用 φ 筛；模除法继承 Burnside 条件。固定每种颜色数量时不能再用单个 $m^"环数"$，需循环指标取系数。
 
 *现场记忆：* 先确定反射算不算同一种；反射项奇偶不同。
+
+=== 例题拆解：CSES — Counting Necklaces
+
+#link("https://cses.fi/problemset/task/2209")[原题]：n 个珠子、m 色，旋转相同算一种，翻转不算；n,m≤$10^6$，答案模 $10^9+7$。
+
+*推导与简证：* 旋转 r 格把下标分成 gcd(n,r) 个环，固定染色必须每环同色，故固定数是 $m^(gcd(n,r))$。由 Burnside，
+$ "ans"=1/n sum_(r=0)^(n-1)m^(gcd(n,r)). $
+r=0 的恒等变换贡献 $m^n$，不能漏。按 gcd 分类就是本节 φ 约数式；只允许旋转，所以不加反射项。
+
+*手算与调用：* n=4,m=3，固定数为 81,3,9,3，和 96 除 4 得 24。用 Mint::pow、std::gcd 累加，最后除 Z(n)；n 小于模数保证模除法合法。直接枚举时间 O(n(log n+log P))、空间 O(1)；想压缩群元素可枚举约数配 φ 筛，复用数学章。
+
+*注意与记忆：* 不能将全部染色 $m^n$ 直接除 n，对称染色轨道更小；翻转等价时才加奇偶反射项。无需新骨架。
 
 == 非周期串、原始项链与圆分关系 <algo-counting-primitive-words>
 

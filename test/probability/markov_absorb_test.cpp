@@ -41,11 +41,38 @@ int main()
     }
     p.assign(3, vector<double>(3));
     p[1][1] = 1 - 1e-12; p[1][2] = 1e-12;
+    ans = markov_absorb(p, {0, 0, 1});
+    assert(abs(ans.prob[1] - 1) < 1e-12 && abs(ans.mean[1] / 1e12 - 1) < 1e-12);
+    for (db rare : {1e-12, 1e-100, 1e-200})
+    {
+        p.assign(4, vector<db>(4));
+        p[1][2] = 1; p[2][1] = 1 - rare; p[2][3] = rare;
+        ans = markov_absorb(p, {0, 0, 0, 1});
+        assert(abs(ans.prob[1] - 1) < 1e-12);
+        assert(abs(ans.mean[1] * rare / 2 - 1) < 1e-12);
+        // 状态换序不能改变答案。
+        swap(p[1], p[2]);
+        for (auto &row : p) swap(row[1], row[2]);
+        ans = markov_absorb(p, {0, 0, 0, 1});
+        assert(abs(ans.mean[2] * rare / 2 - 1) < 1e-12);
+    }
+    p.assign(4, vector<db>(4));
+    p[1][2] = 1; p[1][3] = 1e-100; p[3][3] = 1;
+    ans = markov_absorb(p, {0, 0, 1, 0});
+    assert(isinf(ans.mean[1])); // 再小的陷阱概率也不能删。
+    p.assign(3, vector<db>(3));
+    p[1][1] = 1; p[1][2] = 1e-310;
     bool caught = false;
-    try { markov_absorb(p, {0, 0, 1}); }
-    catch (const runtime_error &) { caught = true; }
-    assert(caught);
+    try
+    {
+        markov_absorb(p, {0, 0, 1});
+    }
+    catch (const runtime_error &)
+    {
+        caught = true;
+    }
+    assert(caught); // 数值范围不足必须报错，不能伪装成数学无限。
     ans = markov_absorb(vector<vector<double>>(2, vector<double>(2)), {0, 1});
     assert(ans.mean[1] == 0 && ans.prob[1] == 1);
-    cout << "PASS Markov: 150 finite chains vs forward tails, traps and numerical failure\n";
+    cout << "PASS Markov: 150 chains vs forward tails, rare escape/cycles/permutations, traps and overflow\n";
 }

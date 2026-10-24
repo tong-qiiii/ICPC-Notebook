@@ -228,21 +228,21 @@ python test/run_all.py
 
 ## 概率与期望专题
 
-第 11 章位于 `sections/11_probability.typ`，包含 15 个主题、13 份 C++17 模板：条件概率、指示变量与方差、常见分布、独立成功次数 DP、固定步数游走、自环与逆拓扑期望、后缀和优化、Sushi 状态压缩、吸收马尔可夫链、一维与树上随机游走、收集齐、随机停止长度、连续段矩以及模意义期望。每个可执行模板均提供最小调用、限制和现场记忆；例题含自拟小模型与 AtCoder 官方题目链接。
+第 11 章位于 `sections/11_probability.typ`，包含 18 个主题、16 份 C++17 模板：条件概率、指示变量与方差、常见分布、独立成功次数 DP、固定步数游走、自环与逆拓扑期望、后缀和优化、Sushi 状态压缩、吸收马尔可夫链、成功条件期望、KMP 模式等待、最优操作期望、一维与树上随机游走、收集齐、随机停止长度、连续段矩以及模意义期望。每个可执行模板均提供最小调用、限制和现场记忆；例题含自拟小模型与 AtCoder 官方题目链接。
 
 ```sh
 python test/probability/run_tests.py
 python test/check_examples.py probability
 ```
 
-验证包含枚举、尾概率求和、容斥和独立线性方程对照，以及 Coins、Sushi、Sugoroku 3/4、Critical Hit 的官方样例。`test/run_all.py` 已自动覆盖该专题；模板在 `test/migration_manifest.json` 中以新增章节登记，不伪造原始备份。吸收链通过图可达性区分无限期望，但高斯精度仍受已有 `GaussD::EPS` 限制；近奇异、小逃逸概率、无限状态过程及新题建模需另行判断。默认不导出本地完整 PDF，正式版本由 GitHub Actions 构建。
+验证包含枚举、尾概率求和、容斥和独立线性方程对照，以及 Coins、Sushi、Sugoroku 3/4、Critical Hit 的官方样例。`test/run_all.py` 自动覆盖该专题；模板在清单中以新增章节登记，不伪造原始备份。吸收链采用 long double 非负消元与缩放残差检查，避免固定 EPS 拒绝小退出概率；浮点结果仍不代表病态系统有误差保证。另有成功条件下的期望、KMP 首次匹配等待和 ABC350 E 最优除法期望，均包含推导、调用、边界与独立对照测试。默认不导出本地完整 PDF，正式版本由 GitHub Actions 构建。
 
 
 ## 组合计数与反演专题
 
 第 12 章位于 `sections/12_counting.typ`，按“对象定义、公式、推导、例子、适用边界”整理 40 个主题，覆盖十二重计数、隔板与有界拆分、容斥与错排、Stirling/Bell/Lah/Eulerian 数、Catalan/Ballot/Fuss–Catalan、整数分拆、生成函数、二项式/子集/约数/倍数反演、φ 加权反演与欧拉变换、GCD/LCM 求和、Burnside/Pólya、非周期串、标号树、矩阵树/LGV、有限域、Hook-length 与染色多项式。
 
-参考 [thedyingkai 的仓库](https://github.com/thedyingkai/XCPC-Template-by-thedyingkai_/tree/04355d0a0ac07913df2629fbfa6f12ef5eb6958e/组合计数)（固定提交 `04355d0`），并在章节中给出 NIST、OEIS 与 MIT 的相关来源。已有 Comb、Lucas、μ/φ 筛、互质计数、FPS 等实现通过稳定引用跳转，不重复展开源码；新增 7 份轻量 C++17 模板，各有独立测试与最小调用。
+参考 [thedyingkai 的仓库](https://github.com/thedyingkai/XCPC-Template-by-thedyingkai_/tree/04355d0a0ac07913df2629fbfa6f12ef5eb6958e/组合计数)（固定提交 `04355d0`），并在章节中给出 NIST、OEIS 与 MIT 的相关来源。已有 Comb、Lucas、μ/φ 筛、互质计数、FPS 等实现通过稳定引用跳转，不重复展开源码；维护 10 份轻量 C++17 模板，各有独立测试与最小调用。Stirling 增加 O(k) 空间单行版，二项式变换增加复用现有 NTT 的卷积版，旧通用版保留。Comb 的合法 N 超表查询明确报错；ABC172 E、ABC162 E 和 CSES Counting Necklaces 补充题意、推导、调用提纲与枚举测试。
 
 ```sh
 python test/counting/run_tests.py

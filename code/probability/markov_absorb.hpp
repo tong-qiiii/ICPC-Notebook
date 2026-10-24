@@ -1,6 +1,5 @@
 #pragma once
 #include <bits/stdc++.h>
-#include "../math/gauss_double.hpp"
 using namespace std;
 #ifndef db
 #define db double
@@ -66,21 +65,63 @@ inline Walk markov_absorb(const vector<vector<db>> &p, const vector<int> &end)
             }
         }
         int m = (int)ord.size();
-        vector<vector<db>> a(m, vector<db>(m + 1));
+        using ld = long double;
+        vector<vector<ld>> w(m, vector<ld>(m));
+        vector<ld> out(m), rhs(m), den(m), ans(m);
         for (int i = 0; i < m; i++)
         {
             int u = ord[i];
-            a[i][i] = 1;
-            a[i][m] = mean ? 1 : 0;
+            rhs[i] = mean ? 1 : 0;
             for (int v = 1; v <= n; v++)
             {
-                if (id[v] != -1) a[i][id[v]] -= p[u][v];
-                else if (!mean && end[v]) a[i][m] += p[u][v];
+                if (v == u) continue;
+                if (id[v] != -1) w[i][id[v]] += p[u][v];
+                else out[i] += p[u][v];
+                if (!mean && end[v]) rhs[i] += p[u][v];
             }
         }
-        vector<db> ans;
-        // 图论已判断无限期望；数值求解失败不能冒充无穷或零。
-        if (GaussD().solve(a, ans) != m) throw runtime_error("ill-conditioned Markov system");
+        auto old = w;
+        auto old_out = out, old_rhs = rhs;
+        // 对角为非自环出边之和；消元只加非负数，避免 1-p[u][u] 消减。
+        for (int k = 0; k < m; k++)
+        {
+            den[k] = out[k];
+            for (int j = k + 1; j < m; j++) den[k] += w[k][j];
+            if (!(den[k] > 0) || !isfinite(den[k])) throw runtime_error("Markov pivot underflow");
+            for (int i = k + 1; i < m; i++)
+            {
+                ld t = w[i][k] / den[k];
+                out[i] += t * out[k];
+                rhs[i] += t * rhs[k];
+                for (int j = k + 1; j < m; j++)
+                {
+                    if (j != i) w[i][j] += t * w[k][j];
+                }
+                w[i][k] = 0;
+            }
+        }
+        for (int i = m - 1; i >= 0; i--)
+        {
+            ld val = rhs[i];
+            for (int j = i + 1; j < m; j++) val += w[i][j] * ans[j];
+            ans[i] = val / den[i];
+            if (!(ans[i] > 0) || !isfinite(ans[i]) || ans[i] > numeric_limits<db>::max() ||
+                (ans[i] > 0 && (db)ans[i] == 0)) throw runtime_error("Markov result outside db range");
+        }
+        ld eps = 1024 * max(1, m) * numeric_limits<ld>::epsilon();
+        for (int i = 0; i < m; i++)
+        {
+            ld diag = old_out[i], val = old_rhs[i];
+            for (int j = 0; j < m; j++)
+            {
+                diag += old[i][j];
+                val += old[i][j] * ans[j];
+            }
+            ld lhs = diag * ans[i];
+            ld scale = max(abs(lhs) + abs(val), numeric_limits<ld>::min());
+            if (!isfinite(lhs) || !isfinite(val) || abs(lhs - val) > eps * scale)
+                throw runtime_error("Markov residual too large");
+        }
         for (int i = 0; i < m; i++)
         {
             if (mean) res.mean[ord[i]] = ans[i];

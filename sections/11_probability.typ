@@ -10,7 +10,7 @@
 
 本章源码块仅展示算法自身实现；公共骨架只打印一次。按依赖链接复制所需的公共代码，再复制本算法与调用示例，比赛时不需要仓库头文件。已有基础算法被复用时，直接复制其原条目，不在每个代码块里重贴。
 
-*依赖索引：* #ref(<algo-math-gauss-double>, supplement: none)、#link(<shared-math-modint>)[Mint 模整数骨架]。
+*依赖索引：* #link(<shared-math-modint>)[Mint 模整数骨架]、#ref(<algo-string-kmp>, supplement: none)。吸收链内置专用非负消元，不再依赖通用高斯。
 
 === 第一次遇到概率题：先做这四步
 
@@ -353,7 +353,11 @@ $ E_u=1+sum_v p_(u,v)E_v $
 
 先反向标记能到目标的 can；不能到的状态为坏点，再反向传播：凡可达坏点者，其到达时间在本有限状态链中为无限。这里“存在一条到目标路径”并不足以保证有限。对概率方程只保留 can 中非目标点，其余 H=0；对期望只保留不会到坏点的非目标点。
 
-复用数学章 #ref(<algo-math-gauss-double>, supplement: [算法]) 的 `GaussD`，先复制该处代码，再复制本节实现，现场不需要引用仓库文件。该求解器用 `EPS=1e-9`；极小逃逸概率、巨大期望或病态方程可能被拒绝或损失精度。优先先消自环、换精度 / 缩放并检查方程残差；不能把“高斯成功”视为任意数据上的误差保证。图可达性严格按 `p>0`，不用 EPS 删边。
+内部以 `long double` 做非负消元。先用非自环概率之和作对角，不计算 `1-p[u][u]`，避免极小逃逸概率被减没；例如每步 $10^(-12)$ 的退出概率加自环，等待期望为 $10^12$。输入 / 输出仍为 db。图可达性严格按 `p>0`，不用 EPS 删边。
+
+*简证：* 写成 $d_i X_i=b_i+sum_(j!=i)w_(i,j)X_j$，其中 $d_i=o_i+sum_(j!=i)w_(i,j)$，o 是流出当前未知集合的概率。消去 k 后，令 $t=w_(i,k)/d_k$，更新 $b_i <- b_i+t b_k$、$o_i <- o_i+t o_k$、$w_(i,j) <- w_(i,j)+t w_(k,j)$（j≠i,k）。经 k 返回 i 的部分成为自环，重算对角时自然消去；这与 Schur 消元等价，但不做相近正数相减。
+
+*数值限制：* 检查原方程缩放残差；主元下溢、结果超出 db 范围或残差异常会报错，不能冒充数学上的无穷。小残差不保证病态系统的前向误差，输入概率本身也已舍入；极端数据须用精确有理数或更高精度复核。不要把罕见陷阱四舍五入删掉。
 
 === 最小调用示例
 
@@ -377,9 +381,84 @@ assert(isinf(ans.mean[1]) && ans.mean[2] == 0);
 
 === 模板引用
 
-*代码依赖：* 先复制 #ref(<algo-math-gauss-double>, supplement: none)；各依赖只复制一次，下方仅展示本节实现。
-
 #source_code(("probability/markov_absorb.hpp",))
+
+== 成功条件下的期望：先条件化转移 <algo-probability-markov-conditional>
+
+*上手：* 题目有“已知最终成功，平均多久”，先算成功概率 H。失败轨迹不能参与平均；无条件时间无限也可能有有限的条件期望。
+
+*用途与接口：* `markov_conditional(p,end)` 返回 `Walk{prob,mean}`；prob 是原链成功概率，mean 是成功条件下首次到达的步数期望。沿用吸收链的 1-index 矩阵、合法概率行与目标定义；H=0 时条件事件不可能，mean 返回 NaN，不能当 0。目标 H=1、mean=0。时间 $O(n^3)$、空间 $O(n^2)$，多次调用无全局状态。
+
+*推导与简证：* H_u>0 时由马尔可夫性与条件概率，
+$ p'_(u,v)=p_(u,v) H_v/H_u. $
+下一步到 v 且以后成功的概率是 $p_(u,v)H_v$；除以当前成功概率得到新转移。H 的调和方程保证行和为 1。去掉不成功的轨迹后再求到达期望；自环概率不变，不能用无条件 E 除以 H。
+
+*例题（自拟）：* 点 1 各一半到目标 2 与陷阱 3。H_1=1/2，无条件 E_1 无限；条件转移只剩 1→2，所以条件期望为 1；点 3 的条件期望未定义。
+
+```cpp
+vector<vector<db>> p(4, vector<db>(4));
+p[1][2] = p[1][3] = .5; p[3][3] = 1;
+auto ans = markov_conditional(p, {0, 0, 1, 0});
+assert(abs(ans.prob[1] - .5) < 1e-12);
+assert(abs(ans.mean[1] - 1) < 1e-12 && isnan(ans.mean[3]));
+```
+
+*注意与现场记忆：* 先 H，再换边权，最后求时间；条件事件不能为零。极小 H 可能下溢，条件化会放大误差；继承吸收链的浮点限制。
+
+*代码依赖：* #ref(<algo-probability-markov-absorb>, supplement: none)。
+
+#source_code(("probability/markov_conditional.hpp",))
+
+== 随机串首次出现模式：KMP 状态与等待时间 <algo-probability-pattern-wait>
+
+*上手：* 不断独立生成字符，问第一次出现目标串要等多久。只记“当前末尾是目标串多长的前缀”；失配走 KMP 回退，不能把重叠匹配当作从零重来。
+
+*用途与接口：* `pattern_wait(s,alphabet,p)` 返回首次包含 s 的期望字符数。字符串自然 0-index，p[1..字符种数]，alphabet 字符互异、概率非负且和为 1。空模式返回 0；所需字符不存在或概率为 0 时返回无穷。状态 i=0..m 映射为矩阵节点 i+1，完整匹配即停止。时间 $O(m sigma+m^3)$、空间 $O(m sigma+m^2)$，只适合小模式；不是大文本 KMP 匹配的复杂度。
+
+*简证：* 最长匹配前缀包含决定未来的全部后缀信息。预处理每个前缀与字符的下一状态，同终点的概率相加；完整匹配为吸收态，其余满足
+$ E_i=1+sum_c p_c E_("go"(i,c)), quad E_m=0. $
+由吸收链求解。相邻窗口重叠，不能用“长度 m 窗口成功概率的倒数”代替等待时间。
+
+*例题（自拟）：* 公平 H/T 下，HT 等待 4、HH 等待 6、HTH 等待 10。HH 的 H 状态遇 T 回 0；HTH 的 H 状态再遇 H 仍保留长度 1。这些失配与重叠使答案不统一为 $2^m$。
+
+```cpp
+assert(abs(pattern_wait("HTH", "HT", {0, .5, .5}) - 10) < 1e-10);
+assert(abs(pattern_wait("HH", "HT", {0, .5, .5}) - 6) < 1e-10);
+assert(pattern_wait("", "HT", {0, .5, .5}) == 0);
+assert(isinf(pattern_wait("T", "HT", {0, 1, 0})));
+```
+
+*扩展到多个模式：* 用 #ref(<algo-string-aho-corasick>, supplement: [AC 自动机]) 建失配转移；把“自身或 fail 链上含终止模式”的点全部设为吸收态，根为起点。逐字符累加转移概率后解相同方程。不能只检查节点原始终止标记，也不能匹配后清零继续走。本代码直接实现单模式，AC 路线是建模扩展。
+
+*现场记忆：* 后缀压成前缀状态；失配走 fail，首次命中即停；小自动机才稠密消元。
+
+*代码依赖：* #ref(<algo-string-kmp>, supplement: none)、#ref(<algo-probability-markov-absorb>, supplement: none)。
+
+#source_code(("probability/pattern_wait.hpp",))
+
+== 最优操作期望：记忆化除法与骰子自环 <algo-probability-toward-zero>
+
+*上手：* 能主动选操作时，不是把所有操作平均。每个操作先算“花费 + 后续最优期望”，再取 min；自环先移项，不能递归当前尚未求出的状态。
+
+*例题：* #link("https://atcoder.jp/contests/abc350/tasks/abc350_e")[ABC350 E — Toward 0]。初始整数 n，可花 x 将其除以 a 向下取整，或花 y 掷公平六面骰、除以点数；求变成 0 的最小期望花费。
+
+*状态、推导与简证：* f(v) 表示从 v 到 0 的最优费用，f(0)=0。骰子点数 1 以 1/6 概率回 v，移项得
+$ A=x+f(floor(v/a)), $
+$ B=(6y+sum_(d=2)^6 f(floor(v/d)))/5, $
+$ f(v)=min(A,B). $
+同一状态未来与历史无关，可选确定的最优平稳动作。若 A≤B，把 f(v)=A 代回骰子候选不会更小；若 B≤A，骰子候选满足自身方程。故 min 正是 Bellman 方程解；正费用排除靠无限停留获益。
+
+*用途、接口与复杂度：* `toward_zero(n,a,x,y)`，无数组下标；$0<=n<=10^18$，2≤a≤6，x,y 正且有限。只访问由 2、3、5 的幂整除得到的状态；设不同状态数为 S，哈希表期望时间 O(S)、空间 O(S)，$S=O(log^3(n+1))$ 是上界，栈深 O(log(n+1))。局部缓存支持多测；不是任意大状态 MDP 通解。
+
+```cpp
+assert(abs(toward_zero(3, 2, 10, 20) - 20) < 1e-10);
+assert(abs(toward_zero(1, 2, 100, 1) - 1.2) < 1e-10);
+assert(toward_zero(0, 6, 5, 7) == 0);
+```
+
+*注意与现场记忆：* 点数 1 只贡献自环；每次都付 y，所以分子是 6y。除法取整、a>1、费用正都是条件；其他回边不能照搬。
+
+#source_code(("probability/toward_zero.hpp",))
 
 == 一维随机游走与赌徒破产 <algo-probability-walk-line>
 
@@ -513,7 +592,7 @@ assert(abs(birthday_expect(2) - 2.5) < 1e-12);
 *延伸模型：* 等待连续 r 次成功需要记末尾连续成功数 `0..r`；相同成功率 p 的期望为
 
 $ sum_(i=1)^r p^(-i) $
-`p=1` 时为 r，`p=0,r>0` 时无限。若模式含重叠（如等待某个字符串首次出现），用 KMP / AC 状态加吸收方程，不能简单取模式概率的倒数。
+`p=1` 时为 r，`p=0,r>0` 时无限。若模式含重叠，见 #ref(<algo-probability-pattern-wait>, supplement: [KMP 模式等待与 AC 扩展])，不能简单取模式概率的倒数。
 
 === 注意事项与现场记忆
 

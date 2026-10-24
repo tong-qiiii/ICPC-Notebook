@@ -47,14 +47,14 @@ def check():
     assert fixed == [8, 2, 2]
     assert len({min(x[r:] + x[:r] for r in range(3)) for x in coins}) == 4
     root = Path(__file__).resolve().parents[2]
-    for name, count in [('11_probability', 15), ('12_counting', 40)]:
+    for name, count in [('11_probability', 18), ('12_counting', 40)]:
         text = (root / 'sections' / (name + '.typ')).read_text(encoding='utf8')
         assert len(re.findall(r'^== ', text, re.M)) == count
         assert text.count('*上手：*') == count
         prose = re.sub(r'```[\s\S]*?```', '', text)
         assert not any('^' in token for token in re.findall(r'`([^`\n]*)`', prose)), name
         assert '^' not in re.sub(r'\$[^$]*\$', '', prose), name
-    print('PASS exact introductory examples and 55 topic guides; prose powers use math')
+    print('PASS exact introductory examples and 58 topic guides; prose powers use math')
 
 
 if __name__ == '__main__':
