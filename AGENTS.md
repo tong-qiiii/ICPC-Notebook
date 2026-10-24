@@ -10,6 +10,11 @@
 
 ## 目录职责
 
+- 第 13 章“DP 板子题”位于 `sections/13_dp_problems.typ`，按原题链接整理题意、状态、转移、维护方法、复杂度及边界；主要为解题提纲，不要求每题生成完整 C++。已存在实现用稳定标签引用。未验证的满分优化明确标记“待复核”，不把小规模基础解报告为满足原题约束。模型对拍入口：`python test/dp_problems/model_checks.py`。
+- 第 14 章“线段树专题”位于 `sections/14_segment_tree_problems.typ`，按 AAL Contest 001 A–X 整理题意、Info / Tag 含义、合并与作用顺序、维护方式、复杂度及易错点；复用第 4 章源码，不重复打印整题代码。官方满分思路与实际实现验证分开报告，随机哈希及动态循环流等限制不能省略。模型测试入口：`python test/segment_tree_problems/model_checks.py`，不把模型测试等同于 24 题完整 C++ 提交通过。
+- 第 14 章另有 10 个补充经典模型；第 15～18 章分别为 `15_tree_problems.typ`、`16_graph_problems.typ`、`17_string_problems.typ`、`18_offline_problems.typ`，每章 8 个模型，复用已有实现，维护识别条件、状态 / 建模、操作顺序、复杂度、调用、边界和例题。模型测试与引用接口的 C++17 检查入口为 `python test/problem_guides/model_checks.py`；扩展思路与已实现接口须明确区分，禁止把现有 max-CDQ 当计数 CDQ、把无序 HLD 回调当有序路径，或把模型小规模验证称为所有例题提交通过。
+- 第 19 章 `sections/19_bit_greedy.typ` 维护 16 类位运算贪心、位分治、性质与构造，每项保留简要证明；函数源码与测试在 `code/bit_greedy/`、`test/bit_greedy/`。运行 `python test/bit_greedy/run_tests.py`。新增位模型必须解释高位优先和可行性保留，检查加法进位、分组顺序、整数范围与 0 值移位 / clz / ctz 边界；不能将配套性质全部标成逐位独立贪心。
+
 - `sections/`：Typst 章节、算法说明及代码引用。
 - `code/`：后续经验证的 C++17 算法模板。
 - `test/`：后续模板对应的测试程序、样例和对拍工具。

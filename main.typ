@@ -173,3 +173,18 @@
 
 // 组合计数与反演
 #include "sections/12_counting.typ"
+
+// DP 板子题：题意、状态、转移与维护方法
+#include "sections/13_dp_problems.typ"
+
+// 线段树专题：题意、Info / Tag、合并与维护方法
+#include "sections/14_segment_tree_problems.typ"
+
+// 树上、图论、字符串及离线查询模型
+#include "sections/15_tree_problems.typ"
+#include "sections/16_graph_problems.typ"
+#include "sections/17_string_problems.typ"
+#include "sections/18_offline_problems.typ"
+
+// 位运算贪心与构造：模型、简证与函数式模板
+#include "sections/19_bit_greedy.typ"

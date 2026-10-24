@@ -1042,5 +1042,81 @@
         ]
       }
     ]
+  },
+  {
+    "topic": "dp_problems",
+    "section": "sections/13_dp_problems.typ",
+    "items": [],
+    "additions": [],
+    "description": "46 contest problem outlines and 6 additional models; no new C++ sources",
+    "tests": [
+      "test/dp_problems/model_checks.py"
+    ]
+  },
+  {
+    "topic": "segment_tree_problems",
+    "section": "sections/14_segment_tree_problems.typ",
+    "items": [],
+    "additions": [],
+    "description": "24 AAL Contest 001 outlines and 10 classic models; no new C++ sources",
+    "tests": [
+      "test/segment_tree_problems/model_checks.py"
+    ]
+  },
+  {
+    "topic": "tree_problems",
+    "section": "sections/15_tree_problems.typ",
+    "items": [],
+    "additions": [],
+    "description": "8 tree models; existing implementations linked",
+    "tests": ["test/problem_guides/model_checks.py"]
+  },
+  {
+    "topic": "graph_problems",
+    "section": "sections/16_graph_problems.typ",
+    "items": [],
+    "additions": [],
+    "description": "8 graph models; existing implementations linked",
+    "tests": ["test/problem_guides/model_checks.py"]
+  },
+  {
+    "topic": "string_problems",
+    "section": "sections/17_string_problems.typ",
+    "items": [],
+    "additions": [],
+    "description": "8 string models; existing implementations linked",
+    "tests": ["test/problem_guides/model_checks.py"]
+  },
+  {
+    "topic": "offline_problems",
+    "section": "sections/18_offline_problems.typ",
+    "items": [],
+    "additions": [],
+    "description": "8 offline models; existing structures linked",
+    "tests": ["test/problem_guides/model_checks.py"]
+  },
+  {
+    "topic": "bit_greedy",
+    "section": "sections/19_bit_greedy.typ",
+    "items": [],
+    "additions": [
+      {"heading": "高位试填最大 AND", "templates": ["code/bit_greedy/max_and_increment.hpp"]},
+      {"heading": "高位禁位最小 OR 生成树", "templates": ["code/bit_greedy/min_or_tree.hpp"]},
+      {"heading": "二次幂拆分", "templates": ["code/bit_greedy/split_powers.hpp"]},
+      {"heading": "位计数集中", "templates": ["code/bit_greedy/concentrate_bits.hpp"]},
+      {"heading": "异或逆序对", "templates": ["code/bit_greedy/xor_inversions.hpp"]},
+      {"heading": "配对最大 AND", "templates": ["code/bit_greedy/max_pair_and.hpp"]},
+      {"heading": "最小异或数对", "templates": ["code/bit_greedy/min_xor_pair.hpp"]},
+      {"heading": "有界异或差", "templates": ["code/bit_greedy/xor_distance.hpp"]},
+      {"heading": "最小最大异或", "templates": ["code/bit_greedy/minimax_xor.hpp"]},
+      {"heading": "和与异或构造", "templates": ["code/bit_greedy/sum_xor_construct.hpp"]},
+      {"heading": "独有位贡献", "templates": ["code/bit_greedy/unique_bits.hpp"]},
+      {"heading": "包含关系补位", "templates": ["code/bit_greedy/growing_mask.hpp"]},
+      {"heading": "区间最大异或", "templates": ["code/bit_greedy/range_xor.hpp"]},
+      {"heading": "区间 AND OR 与端点反推", "templates": ["code/bit_greedy/range_and_or.hpp"]},
+      {"heading": "恰好 k 个二次幂", "templates": ["code/bit_greedy/power_terms.hpp"]},
+      {"heading": "借位链构造", "templates": ["code/bit_greedy/borrow_chain.hpp"]}
+    ],
+    "tests": ["test/bit_greedy/run_tests.py"]
   }
 ]

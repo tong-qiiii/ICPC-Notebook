@@ -2,7 +2,15 @@
 
 用于整理 ICPC 竞赛算法模板、说明和验证用例，并使用 Typst 编译为便于查阅的 PDF Notebook。
 
-已迁移第 1～10 章，并新增第 11 章“概率与期望”、第 12 章“组合计数与反演”，全部导入 `main.typ`。第 4～10 章的 121 个原始条目整理为 140 份模板，重要变体分别保留；完整文件清单、修复及验证范围见 [migration_report.md](migration_report.md)。`raw/` 永久保存原始 Markdown 备份，不修改其中任何文件。
+已迁移第 1～10 章，并新增概率与期望、组合计数与反演、DP 板子题、线段树专题、树上题型、图论建模、字符串题型、离线查询和位运算贪心与构造，当前共 19 章，全部导入 `main.typ`。第 4～10 章的 121 个原始条目整理为 140 份模板，重要变体分别保留；完整文件清单、修复及验证范围见 [migration_report.md](migration_report.md)。`raw/` 永久保存原始 Markdown 备份，不修改其中任何文件。
+
+第 13 章收录 Educational DP Contest 的 26 题、Next DP Contest 的 20 题及 6 个补充经典模型，重点是题意、状态、转移、维护与复杂度，不重复打印整题代码。部分 NDPC 难题仅有基础模型，满分优化明确标记待复核；不能将这些基础解直接当作完整数据的解法。区间恰有指定点数使用前缀等式与活跃约束 DP，明确重叠宽度限制。运行 `python test/dp_problems/model_checks.py` 可检查题目覆盖及若干模型的小规模随机对拍；本章没有新增 C++ 模板。
+
+第 14 章按 [AAL Contest 001](https://atcoder.jp/contests/aalc001/tasks) 的 A–X 共 24 题及 10 个补充经典模型整理线段树：题意、Info / Tag、合并 / 作用、搜索或扫描顺序、复杂度与易错点；直接引用第 4 章已有模板。运行 `python test/segment_tree_problems/model_checks.py` 检查题目覆盖和部分模型的小规模对拍；没有新增整题 C++，未声称 24 题实现均通过。P 的随机碰撞风险、X 的动态循环流实现等限制保留在正文。
+
+第 15～18 章分别为树上题型、图论建模、字符串题型、离线查询，每章 8 个模型，以识别条件、转化推导、维护顺序、边界与例题为主。已有源码仅用稳定标签链接，不重复展示；尚需扩展的接口会明确说明。运行 `python test/problem_guides/model_checks.py` 检查模型覆盖、小规模暴力对拍及所引用接口的 C++17 调用；这不是所有外部例题的完整提交验收。
+
+第 19 章“位运算贪心与构造”收录 16 类模型与函数式 C++17 模板，包含简要证明、代表题、复杂度、调用及适用范围。覆盖高位答案贪心、二次幂拆分、位计数集中、异或逆序、配对分组、异或差值与极值、和 / 异或构造、独有位、补位、区间性质、popcount 和借位链。运行 `python test/bit_greedy/run_tests.py` 做独立编译、暴力 / 随机对拍与 PDF 代码复制检查；题目困难版与超出标注范围的推广不包含在验证声明中。
 
 ## 目录结构
 
@@ -27,9 +35,9 @@ ICPC-Notebook/
 │   ├── 09_string.md
 │   └── 10_dp.md
 ├── migration_report.md # 第 4～10 章迁移、修复与验证清单
-├── sections/       # 01_tools.typ ～ 12_counting.typ
+├── sections/       # 01_tools.typ ～ 19_bit_greedy.typ
 ├── code/           # basic/、graph/、tree/、data_structure/、interval_greedy/
-│                   # math/、geometry/、poly/、string/、dp/、probability/、counting/
+│                   # math/、geometry/、poly/、string/、dp/、probability/、counting/、bit_greedy/
 └── test/           # 各章测试、随机对拍、独立编译及 PDF 调用验证
 ```
 
@@ -77,7 +85,7 @@ typst compile main.typ ICPC-Notebook.pdf
 typst watch main.typ ICPC-Notebook.pdf
 ```
 
-`main.typ` 已启用十二章，显示章节号按 include 的实际顺序自动生成。章节内的二级算法标题按位置连续编号，原稿编号只保存在来源信息中。现有文件名前缀是稳定的维护地址，不绑定显示编号。章节路径和导入规则见 [Typst 官方文档](https://typst.app/docs/reference/scripting/#modules)。
+`main.typ` 已启用十九章，显示章节号按 include 的实际顺序自动生成。章节内的二级算法标题按位置连续编号，原稿编号只保存在来源信息中。现有文件名前缀是稳定的维护地址，不绑定显示编号。章节路径和导入规则见 [Typst 官方文档](https://typst.app/docs/reference/scripting/#modules)。
 
 使用 VS Code 时，以仓库根目录打开工作区。`.vscode/settings.json` 已按 [Tinymist 的多文件配置](https://myriad-dreamin.github.io/tinymist/feature/compiler-settings.html) 将检查入口固定为 `main.typ`，并使用相同的缓存字体；默认不自动导出 PDF。`sections/*.typ` 是章节片段，不能单独编译：它们依赖总入口中的标题编号、全局样式和其他章节标签，单独检查会出现“无法引用未编号标题”或“标签不存在”。已有编辑器会话若仍显示这些错误，执行 `Developer: Reload Window` 重新载入工作区配置。
 
@@ -164,6 +172,8 @@ python test/basic/run_tests.py
 脚本会检查头文件独立编译、章节调用示例及多个翻译单元链接，并分别运行提交模式和 `-DLOCAL` 模式的边界与随机测试。可通过 `CXX` 环境变量指定编译器。可执行文件和对拍输入输出仅写入临时目录，不污染仓库。
 
 实数二分、整数三分和实数三分采用函数式接口；三分默认求最小值，传 `greater<>` 求最大值。测试包含整数三分暴力对拍、实数搜索已知答案、端点与最优平台、整数极值、浮点停滞，以及个人基础模板兼容和新增调用示例的复制运行。二分要求判定单调；三分要求两侧严格单调，允许最优值平台，不能直接用于任意阶梯函数。
+
+`code/basic/stream.hpp` 提供字符 / 字符串分割、空白分词、格式清洗后读数、严格 ll 校验及整数片段提取；第一章同时给出固定格式、数值转换、EOF、`cin` 与 `getline` 混用和流复用示例。空字段规则、转换失败及溢出行为均在接口中注明，测试覆盖这些边界及 1200 组随机用例。
 
 ## 图论验证与比赛使用
 

@@ -114,6 +114,113 @@ if (!io.read(x) || !io.read(s)) return 0;
 
 #raw(read("../code/basic/fast_io.hpp"), lang: "cpp", block: true)
 
+== Stream / 字符串解析 <algo-basic-stream>
+
+*用途：* 按用户提供的三页 stream 资料整理整行输入、分词、分割、数值转换、固定格式、EOF 与流复用。源码维护在 `code/basic/stream.hpp`；没有新增或修改原始备份。
+*形式：* 普通函数配合标准库 stringstream，无额外类或全局状态；输出 vector 自然使用 0-index。每次调用重新创建局部流，反复调用互不影响。
+
+=== 常用组合与输入边界
+
+- `getline(cin,s)` 读一行并去掉分隔换行，保留行首空格和空行。未知行数用 `while (getline(cin,line))`，未知 token 数用 `while (cin >> v)`；以本次读取是否成功控制循环，不写 `while (!cin.eof())`。文件最后一行没有换行也能读取。
+- `stringstream ss(line)` 把字符串当流，`while (ss >> t)` 按空白分词；连续空格、Tab 和换行被跳过。只输入也可用 istringstream。竞赛主程序可用 `ios::sync_with_stdio(false); cin.tie(nullptr);`，之后不要混用 C / C++ 标准输入。
+- `cin >> n` 后直接 getline 可能读到剩余换行。`getline(cin >> ws,s)` 会跳过全部前导空白，包括空行；若行首空格或空行有意义，先 `cin.ignore(numeric_limits<streamsize>::max(),'\n');` 丢弃上一行余下部分，再正常 getline。若要读上一行剩余内容，不应先 ignore。
+- `ss.clear(); ss.str(new_line);` 同时清理 eof / fail 并更换字符串；只有 str 不会清错误状态，只有 clear 不会替换字符串。局部直接重新建流通常更清楚。
+
+=== 分词与分割接口
+
+- `split_words(s)`：按空白分词，忽略连续空白，纯空白或空串返回空 vector。
+- `split(s,char_delim,keep_tail=false)`：对应 `getline(ss,t,delim)`，保留中间空字段；默认丢弃最后一个分隔符后的空字段，空串返回空 vector。传 true 时保留尾部空字段，空串按一个空字段处理。例：`"a,,b,"` 默认得到 `{"a","","b"}`，true 得到 `{"a","","b",""}`。
+- `split(s,string_delim)`：find / substr 按整个字符串从左到右、不重叠地切分，保留首尾与连续空字段；空输入得到一个空字段。空分隔串约定不切分，返回 `{s}`，避免原示例的死循环。`char` 与字符串版本的空字段规则不同，按所需语义选择。
+- 返回字段均不自动 trim。char 是单字节分隔符，UTF-8 多字节分隔符使用字符串版。这些都是简单分割，不识别 CSV 引号与转义。
+
+=== 数值读取与格式清洗
+
+- `read_numbers(s,delims="")`：把 delims 中每个分隔字符换成空格，再按 ll 读取。如 `read_numbers("12,34;56|78",",;|")`。适用于格式已知、每个数都在 ll 内的输入；遇到非法字符或溢出便停止，只返回已成功读取的前缀，不能当作完整输入校验。
+- `parse_int(s,ans)`：完整解析一个十进制 ll，允许正负号和首尾空白；非法、越界或带多余内容时返回 false，并保留 ans 原值。`is_integer(s)` 只返回这个判断。`"12a"`、`"1 2"`、空串和超出 ll 范围的字符串都不合法。
+- `split_int(s,delim,keep_tail=false)`：先按字符切分，再严格转 ll；空字段、非整数或越界抛 `invalid_argument`。默认沿用字符分割的尾部规则，若末尾空字段也应判错则传 true。
+- `parse_numbers(s,signed_value=true)`：从标签文本提取整数片段，如 `"x=12,y=-34,z=56"`。正负号仅在紧邻数字时生效，孤立符号跳过；任一片段溢出抛 `out_of_range`。传 false 忽略符号，只提取非负数值。它不解析小数或科学计数法，`"3.14"` 会得到 3 和 14；减号是字段分隔符时应使用格式清洗，而非带符号提取。
+- 原资料的“保留所有负号后直接读取”会在孤立 `-` 处提前停止，这里先定位有效整数片段再交给流解析。手写字符分类若用 `isdigit`，参数应先转 unsigned char；实现使用 ASCII 数字比较，避免有符号 char 问题。
+
+*复杂度：* 单字符分割、分词、严格转换及提取整数片段总时间 `O(|s|)`；read_numbers 保守为 `O(|s|*(|delims|+1))`，固定几种分隔符时为线性。字符串 find 分割的保守上界 `O(|s|*(|delim|+1))`。空间均为 `O(|s|)`，包含流副本和结果；不适合把超大输入全部复制后再反复解析。
+
+=== 固定格式与标准转换
+
+时间用 `ss >> h >> sep1 >> m >> sep2 >> sec`，坐标用 `ss >> left >> x >> comma >> y >> right`。已知合法格式可直接读；格式不保证合法时须检查提取成功、每个分隔符、字段范围及末尾多余内容，时间还须按题面检查时分秒范围。
+
+key=value 用 `getline(ss,key,'='); getline(ss,value);`，value 中后续等号不会再次拆开；多个逗号分隔项先拆 item，再对每项建流读取 key/value。若缺少等号，第二次 getline 可能失败，不能直接当成合法记录。
+
+单个 token 可用 `stoi / stoll / stod`，转字符串用 `to_string`；混合类型如姓名、年龄、分数用流。标准转换可能只消费合法前缀，`stoi("12a")` 不保证报错，严格检查需使用 pos 确认消费位置；空串 / 非法开头抛 `invalid_argument`，超范围抛 `out_of_range`。`is_integer` 判断的是可表示的 ll，而非任意长度数学整数。
+
+=== 最小调用示例
+
+```cpp
+assert(split("a,,b,", ',', true) ==
+       vector<string>({"a", "", "b", ""}));
+assert(split("abcXYZdefXYZghi", "XYZ").size() == 3);
+assert(split_words("a  b\tc").size() == 3);
+assert(read_numbers("12,34;56|78", ",;|") ==
+       vector<ll>({12, 34, 56, 78}));
+assert(split_int("1,-2,3", ',') == vector<ll>({1, -2, 3}));
+assert(parse_numbers("x=12,y=-34,z=56") ==
+       vector<ll>({12, -34, 56}));
+ll v = 7;
+assert(!parse_int("12a", v) && v == 7);
+assert(is_integer(" -12 "));
+
+stringstream ss("12:30:45");
+int h, m, sec;
+char c1, c2, c3;
+assert(ss >> h >> c1 >> m >> c2 >> sec);
+assert(c1 == ':' && c2 == ':' && h == 12 && m == 30 && sec == 45);
+ss.clear(); ss.str("(12,-34)");
+ll px, py;
+assert(ss >> c1 >> px >> c2 >> py >> c3);
+assert(c1 == '(' && c2 == ',' && c3 == ')' && px == 12 && py == -34);
+
+ss.clear(); ss.str("name=alice");
+string key, value;
+getline(ss, key, '='); getline(ss, value);
+assert(key == "name" && value == "alice");
+map<string, ll> fields;
+for (const string &item : split("x=10,y=20", ','))
+{
+    stringstream tmp(item);
+    getline(tmp, key, '='); getline(tmp, value);
+    assert(parse_int(value, v));
+    fields[key] = v;
+}
+assert(fields["x"] == 10 && fields["y"] == 20);
+
+ss.clear(); ss.str("Alice 18 95.5");
+string name;
+int age;
+double score;
+assert(ss >> name >> age >> score);
+assert(name == "Alice" && age == 18 && score == 95.5);
+size_t pos;
+assert(stoi("123") == 123 && stoll("123456789", &pos) == 123456789);
+assert(pos == 9 && stod("3.14") > 3 && to_string(123) == "123");
+
+// 用字符串流复现 cin >> n 后读取整行，保留行首空格。
+stringstream input("2\n  abc\nlast");
+int n;
+string line;
+input >> n;
+input.ignore(numeric_limits<streamsize>::max(), '\n');
+assert(getline(input, line) && line == "  abc");
+vector<string> lines;
+while (getline(input, line)) lines.push_back(line);
+assert(lines == vector<string>({"last"}));
+```
+
+=== 现场记忆
+
+整行 getline，空白用 `>>`，单字符分割用 getline 的第三参，多字符用 find；格式乱先洗成空格。未知数量看读取结果，别预判 eof；复用先 clear 再 str；ws 会吃行首空格和空行。
+
+=== 模板引用
+
+#raw(read("../code/basic/stream.hpp"), lang: "cpp", block: true)
+
 == 取模类 Mint <algo-basic-mint>
 
 *用途：* 模意义的加减乘、幂、逆元和除法。
